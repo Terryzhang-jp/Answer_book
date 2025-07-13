@@ -27,6 +27,8 @@ import AnswerButton from '@/features/answer-report/components/AnswerButton';
 import StreamingProgress from '@/features/answer-report/components/StreamingProgress';
 import { useReportStore } from '@/features/answer-report/store/reportStore';
 import { StreamingCharacterResponse } from '@/components/StreamingText';
+import BackgroundOverlay from '@/components/BackgroundOverlay';
+import ExpertResponseModal from '@/components/ExpertResponseModal';
 
 export default function ChatPage() {
   const router = useRouter();
@@ -36,6 +38,7 @@ export default function ChatPage() {
 
   const [sequentialMode, setSequentialMode] = useState(true); // 顺序显示模式，默认开启
   const [completedGuests, setCompletedGuests] = useState<Set<string>>(new Set()); // 已完成的嘉宾
+  const [pendingResponse, setPendingResponse] = useState<any>(null); // 保存待处理的API响应
   
   const {
     messages,
@@ -45,6 +48,8 @@ export default function ChatPage() {
     isLoading: storeLoading,
     error,
     insightDisplay,
+    expertModal,
+    isWaitingForExperts,
     addUserMessage,
     addResponse,
     setLoading,
@@ -54,7 +59,12 @@ export default function ChatPage() {
     startInsightDisplay,
     resetInsightDisplay,
     completeInsightDisplay,
-    skipInsightDisplay
+    skipInsightDisplay,
+    openExpertModal,
+    closeExpertModal,
+    nextExpert,
+    showAllExperts,
+    setWaitingForExperts
   } = useConversationStore();
 
   // 报告生成状态
@@ -82,14 +92,10 @@ export default function ChatPage() {
       setLoading(true);
       setError(null);
 
+      // 立即显示背景遮罩
+      setWaitingForExperts(true);
+
       addUserMessage(newQuestion);
-
-      // 暂时禁用insight生成
-      // console.log('重置insight状态，开始新的insight生成');
-      // resetInsightDisplay(); // 先重置状态
-
-      // console.log('启动insight显示');
-      // startInsightDisplay('', ''); // 直接启动显示状态
 
       const response = await ApiService.askQuestion({
         question: newQuestion.trim(),
@@ -97,11 +103,21 @@ export default function ChatPage() {
         thread_id: currentThreadId || undefined, // 传递当前的thread_id以继续对话
       });
 
-      // API调用完成，关闭insight显示（已禁用）
-      // console.log('API调用完成，关闭insight显示');
-      // completeInsightDisplay();
+      // API调用完成，检查是否有专家回复
+      const expertResponses = response.character_responses.filter(
+        char => char.character_role !== 'system'
+      );
 
-      addResponse(response);
+      if (expertResponses.length > 0) {
+        // 保存完整的API响应，打开专家模态框
+        setPendingResponse(response);
+        openExpertModal(expertResponses);
+      } else {
+        // 没有专家回复，直接添加响应并关闭遮罩
+        setWaitingForExperts(false);
+        addResponse(response);
+      }
+
       setNewQuestion('');
       // 清理完成状态，为新的对话做准备
       setCompletedGuests(new Set());
@@ -144,6 +160,17 @@ export default function ChatPage() {
   const handleInsightSkip = () => {
     console.log('用户跳过Insight显示');
     skipInsightDisplay();
+  };
+
+  // 专家模态框关闭处理
+  const handleExpertModalClose = () => {
+    // 关闭模态框并将完整的API响应添加到正常对话流中
+    if (pendingResponse) {
+      addResponse(pendingResponse, true); // 标记为已显示
+      setPendingResponse(null);
+    }
+
+    closeExpertModal();
   };
 
   // 切换专家展开状态
@@ -465,6 +492,7 @@ export default function ChatPage() {
                           onComplete={handleGuestComplete}
                           shouldStart={shouldStart}
                           showSkipButton={true}
+                          skipStreaming={message.isAlreadyShown} // 如果已在模态框显示过，跳过流式效果
                         />
                       </div>
                     </motion.div>
@@ -633,6 +661,24 @@ export default function ChatPage() {
           onSkip={handleInsightSkip}
         />
       )} */}
+
+      {/* 背景遮罩 */}
+      <BackgroundOverlay
+        isActive={isWaitingForExperts}
+        message="智者正在思考..."
+      />
+
+      {/* 专家回复模态框 */}
+      <ExpertResponseModal
+        isOpen={expertModal.isOpen}
+        experts={expertModal.experts}
+        currentIndex={expertModal.currentIndex}
+        showAll={expertModal.showAll}
+        isAutoPlaying={expertModal.isAutoPlaying}
+        onClose={handleExpertModalClose}
+        onNext={nextExpert}
+        onShowAll={showAllExperts}
+      />
 
       {/* 报告生成弹框 */}
       {isGenerating && (

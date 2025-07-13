@@ -95,6 +95,7 @@ interface StreamingCharacterResponseProps {
   onComplete?: () => void; // 完成回调
   shouldStart?: boolean; // 是否应该开始
   showSkipButton?: boolean; // 是否显示跳过按钮
+  skipStreaming?: boolean; // 是否跳过流式效果，直接显示完整内容
 }
 
 export const StreamingCharacterResponse: React.FC<StreamingCharacterResponseProps> = ({
@@ -104,7 +105,8 @@ export const StreamingCharacterResponse: React.FC<StreamingCharacterResponseProp
   totalGuests = 1,
   onComplete,
   shouldStart = true,
-  showSkipButton = false
+  showSkipButton = false,
+  skipStreaming = false
 }) => {
   const [currentPhase, setCurrentPhase] = useState<'waiting' | 'bodyLanguage' | 'thinking' | 'speaking' | 'complete'>('waiting');
   const [isReady, setIsReady] = useState(false);
@@ -115,11 +117,17 @@ export const StreamingCharacterResponse: React.FC<StreamingCharacterResponseProp
     setIsSkipped(true);
     setCurrentPhase('complete');
     onComplete?.();
-  }, [onComplete]);
+  }, []); // 移除onComplete依赖，使用最新的onComplete引用
 
   // 处理启动逻辑
   useEffect(() => {
-    if (shouldStart && !isSkipped) {
+    if (skipStreaming) {
+      // 如果跳过流式效果，直接显示完整内容
+      setIsSkipped(true);
+      setCurrentPhase('complete');
+      setIsReady(true);
+      onComplete?.();
+    } else if (shouldStart && !isSkipped) {
       // 如果应该开始，立即开始（第一个嘉宾）或稍微延迟（后续嘉宾）
       const delay = guestIndex === 0 ? 0 : 500; // 后续嘉宾稍微延迟500ms
       const timer = setTimeout(() => {
@@ -129,7 +137,7 @@ export const StreamingCharacterResponse: React.FC<StreamingCharacterResponseProp
 
       return () => clearTimeout(timer);
     }
-  }, [shouldStart, guestIndex, isSkipped]);
+  }, [shouldStart, guestIndex, isSkipped, skipStreaming]); // 移除onComplete依赖
 
   const handlePhaseComplete = useCallback(() => {
     if (isSkipped) return; // 如果已跳过，不处理阶段完成
@@ -143,21 +151,21 @@ export const StreamingCharacterResponse: React.FC<StreamingCharacterResponseProp
       // 当嘉宾完全完成时，通知父组件
       onComplete?.();
     }
-  }, [currentPhase, onComplete, isSkipped]);
+  }, [currentPhase, isSkipped]); // 移除onComplete依赖
 
   // 如果没有肢体语言，直接从思考开始
   useEffect(() => {
     if (!message.bodyLanguage && currentPhase === 'bodyLanguage') {
       setCurrentPhase('thinking');
     }
-  }, [message.bodyLanguage, currentPhase]);
+  }, [message.bodyLanguage]); // 移除currentPhase依赖
 
   // 如果没有思考，从肢体语言直接到发言
   useEffect(() => {
     if (!message.thinking && currentPhase === 'thinking') {
       setCurrentPhase('speaking');
     }
-  }, [message.thinking, currentPhase]);
+  }, [message.thinking]); // 移除currentPhase依赖
 
   // 如果还在等待，显示等待状态
   if (!isReady) {

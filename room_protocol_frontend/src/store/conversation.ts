@@ -16,6 +16,7 @@ interface Message {
   thinking?: string;
   speaking?: string;
   bodyLanguage?: string;
+  isAlreadyShown?: boolean; // 标记是否已在模态框中显示过
 }
 
 interface ConversationState {
@@ -45,11 +46,23 @@ interface ConversationState {
     isLoading: boolean;
   };
 
+  // 专家模态框状态
+  expertModal: {
+    isOpen: boolean;
+    experts: CharacterResponse[];
+    currentIndex: number;
+    showAll: boolean;
+    isAutoPlaying: boolean;
+  };
+
+  // 背景遮罩状态
+  isWaitingForExperts: boolean;
+
   // 操作方法
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   addUserMessage: (content: string) => void;
-  addResponse: (response: AnswerResponse) => void;
+  addResponse: (response: AnswerResponse, isAlreadyShown?: boolean) => void;
   clearConversation: () => void;
   startNewDiscussion: () => void;
   setThreadId: (threadId: string) => void;
@@ -62,6 +75,13 @@ interface ConversationState {
   skipInsightDisplay: () => void;
   setInsightLoading: (loading: boolean) => void;
   resetInsightDisplay: () => void;
+
+  // 专家模态框操作方法
+  openExpertModal: (experts: CharacterResponse[]) => void;
+  closeExpertModal: () => void;
+  nextExpert: () => void;
+  showAllExperts: () => void;
+  setWaitingForExperts: (waiting: boolean) => void;
 }
 
 export const useConversationStore = create<ConversationState>((set) => ({
@@ -86,6 +106,18 @@ export const useConversationStore = create<ConversationState>((set) => ({
     isCompleted: false,
     isLoading: false,
   },
+
+  // 专家模态框初始状态
+  expertModal: {
+    isOpen: false,
+    experts: [],
+    currentIndex: 0,
+    showAll: false,
+    isAutoPlaying: true,
+  },
+
+  // 背景遮罩初始状态
+  isWaitingForExperts: false,
 
   // 设置加载状态
   setLoading: (loading: boolean) => {
@@ -112,7 +144,7 @@ export const useConversationStore = create<ConversationState>((set) => ({
   },
 
   // 添加系统响应
-  addResponse: (response: AnswerResponse) => {
+  addResponse: (response: AnswerResponse, isAlreadyShown: boolean = false) => {
     const newMessages: Message[] = [];
     const baseTimestamp = Date.now();
 
@@ -128,6 +160,7 @@ export const useConversationStore = create<ConversationState>((set) => ({
         thinking: charResponse.thinking,
         speaking: charResponse.speaking,
         bodyLanguage: charResponse.body_language,
+        isAlreadyShown, // 添加已显示标记
       };
       newMessages.push(message);
     });
@@ -276,5 +309,58 @@ export const useConversationStore = create<ConversationState>((set) => ({
         isLoading: false,
       }
     }));
+  },
+
+  // 打开专家模态框
+  openExpertModal: (experts: CharacterResponse[]) => {
+    set(() => ({
+      expertModal: {
+        isOpen: true,
+        experts,
+        currentIndex: 0,
+        showAll: false,
+        isAutoPlaying: true,
+      },
+      isWaitingForExperts: false,
+    }));
+  },
+
+  // 关闭专家模态框
+  closeExpertModal: () => {
+    set(() => ({
+      expertModal: {
+        isOpen: false,
+        experts: [],
+        currentIndex: 0,
+        showAll: false,
+        isAutoPlaying: true,
+      },
+    }));
+  },
+
+  // 切换到下一个专家
+  nextExpert: () => {
+    set((state) => ({
+      expertModal: {
+        ...state.expertModal,
+        currentIndex: Math.min(state.expertModal.currentIndex + 1, state.expertModal.experts.length - 1),
+      }
+    }));
+  },
+
+  // 显示所有专家
+  showAllExperts: () => {
+    set((state) => ({
+      expertModal: {
+        ...state.expertModal,
+        showAll: true,
+        isAutoPlaying: false,
+      }
+    }));
+  },
+
+  // 设置等待专家状态
+  setWaitingForExperts: (waiting: boolean) => {
+    set({ isWaitingForExperts: waiting });
   },
 }));
