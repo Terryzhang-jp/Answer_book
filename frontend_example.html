@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>答案之书 - 智能问答系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .chat-container {
+            height: 600px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 15px;
+            max-width: 80%;
+        }
+
+        .user-message {
+            background: #007bff;
+            color: white;
+            margin-left: auto;
+        }
+
+        .system-message {
+            background: #28a745;
+            color: white;
+            margin: 0 auto;
+            text-align: center;
+            max-width: 90%;
+        }
+
+        .expert-message {
+            background: white;
+            border: 2px solid #e9ecef;
+            margin-right: auto;
+        }
+
+        .expert-header {
+            font-weight: bold;
+            color: #495057;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .thinking {
+            font-style: italic;
+            color: #6c757d;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .speaking {
+            color: #212529;
+            line-height: 1.6;
+        }
+
+        .input-container {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .input-field {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .input-field:focus {
+            border-color: #667eea;
+        }
+
+        .send-btn {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: transform 0.2s;
+        }
+
+        .send-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+        }
+
+        .error {
+            background: #dc3545;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+        }
+
+        .thread-info {
+            background: #17a2b8;
+            color: white;
+            padding: 10px 20px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 答案之书</h1>
+            <p>与历史上的智者对话，探索人生的深层问题</p>
+        </div>
+        
+        <div class="thread-info" id="threadInfo" style="display: none;">
+            会话ID: <span id="threadId"></span>
+        </div>
+
+        <div class="chat-container">
+            <div class="messages" id="messages">
+                <div class="message system-message">
+                    <p>欢迎来到答案之书！请提出您内心的疑惑，我将邀请最合适的专家与您对话。</p>
+                </div>
+            </div>
+
+            <div class="input-container">
+                <div class="input-group">
+                    <input 
+                        type="text" 
+                        class="input-field" 
+                        id="messageInput" 
+                        placeholder="请输入您的问题..."
+                        onkeypress="handleKeyPress(event)"
+                    >
+                    <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+                        发送
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentThreadId = null;
+        const API_BASE = 'http://localhost:8000/api';
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+
+            // 显示用户消息
+            addUserMessage(message);
+            input.value = '';
+            
+            // 禁用发送按钮
+            const sendBtn = document.getElementById('sendBtn');
+            sendBtn.disabled = true;
+            sendBtn.textContent = '发送中...';
+
+            try {
+                let response;
+                
+                if (currentThreadId) {
+                    // 继续对话
+                    response = await fetch(`${API_BASE}/continue`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            message: message,
+                            thread_id: currentThreadId
+                        })
+                    });
+                } else {
+                    // 新对话
+                    response = await fetch(`${API_BASE}/ask`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            question: message
+                        })
+                    });
+                }
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                // 设置thread_id
+                if (data.thread_id && !currentThreadId) {
+                    currentThreadId = data.thread_id;
+                    document.getElementById('threadId').textContent = currentThreadId;
+                    document.getElementById('threadInfo').style.display = 'block';
+                }
+
+                // 显示房间宣告
+                if (data.room_announcement) {
+                    addSystemMessage(data.room_announcement);
+                }
+
+                // 显示专家回应
+                data.character_responses.forEach(response => {
+                    addExpertMessage(response);
+                });
+
+            } catch (error) {
+                console.error('Error:', error);
+                addErrorMessage('发送消息时出错，请稍后重试。');
+            } finally {
+                // 恢复发送按钮
+                sendBtn.disabled = false;
+                sendBtn.textContent = '发送';
+            }
+        }
+
+        function addUserMessage(message) {
+            const messagesContainer = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message user-message';
+            messageDiv.innerHTML = `<p>${escapeHtml(message)}</p>`;
+            messagesContainer.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        function addSystemMessage(message) {
+            const messagesContainer = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message system-message';
+            messageDiv.innerHTML = `<p>${escapeHtml(message)}</p>`;
+            messagesContainer.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        function addExpertMessage(response) {
+            const messagesContainer = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message expert-message';
+            
+            let html = `<div class="expert-header">${escapeHtml(response.character_name)} (${response.character_role})</div>`;
+            
+            if (response.thinking) {
+                html += `<div class="thinking">💭 ${escapeHtml(response.thinking)}</div>`;
+            }
+            
+            html += `<div class="speaking">${escapeHtml(response.speaking)}</div>`;
+            
+            if (response.body_language) {
+                html += `<div class="thinking">🎭 ${escapeHtml(response.body_language)}</div>`;
+            }
+            
+            messageDiv.innerHTML = html;
+            messagesContainer.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        function addErrorMessage(message) {
+            const messagesContainer = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'error';
+            messageDiv.innerHTML = `<p>❌ ${escapeHtml(message)}</p>`;
+            messagesContainer.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        function scrollToBottom() {
+            const messagesContainer = document.getElementById('messages');
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // 页面加载完成后聚焦输入框
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('messageInput').focus();
+        });
+    </script>
+</body>
+</html>

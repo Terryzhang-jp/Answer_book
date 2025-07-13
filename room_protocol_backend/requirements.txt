@@ -1,0 +1,28 @@
+# Web框架
+fastapi
+uvicorn[standard]
+
+# HTTP客户端
+httpx
+
+# 数据验证
+pydantic
+pydantic-settings
+
+# LLM集成
+langchain
+langchain-core
+langchain-google-genai
+langchain-openai
+langchain-anthropic
+langgraph
+langgraph-checkpoint
+
+# 环境变量管理
+python-dotenv
+
+# 日志
+loguru
+
+# 工具库
+python-multipart
