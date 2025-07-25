@@ -10,6 +10,7 @@ from core.schemas.conversation import (
     AnswerResponse
 )
 from core.services.conversation_service import ConversationService
+from core.services.rate_limiter import check_daily_limit, get_daily_status
 from config.settings import get_settings
 
 router = APIRouter()
@@ -22,10 +23,29 @@ conversation_service = ConversationService()
 async def create_room(request: QuestionRequest):
     """创建新房间"""
     try:
+        # 检查每日对话次数限制
+        allowed, status = check_daily_limit()
+        if not allowed:
+            raise HTTPException(
+                status_code=429,
+                detail={
+                    "error": "DAILY_LIMIT_EXCEEDED",
+                    "message": f"今日对话次数已达上限 ({status['current_count']}/{status['max_count']})，请明天再试",
+                    "status": status
+                }
+            )
+
         # 强制创建新thread_id（不使用传入的thread_id）
         request.thread_id = None
         response = await conversation_service.process_question(request)
+
+        # 在响应中添加限制状态信息
+        if hasattr(response, 'metadata'):
+            response.metadata.update({"daily_limit_status": status})
+
         return response
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -38,6 +58,19 @@ async def ask_question(request: QuestionRequest):
             raise HTTPException(status_code=400, detail="继续对话必须提供thread_id")
         response = await conversation_service.process_question(request)
         return response
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/daily-limit/status")
+async def get_daily_limit_status():
+    """获取每日对话限制状态"""
+    try:
+        status = get_daily_status()
+        return {
+            "success": True,
+            "data": status
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

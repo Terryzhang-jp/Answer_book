@@ -13,6 +13,8 @@ services:
       - DEBUG=False
     volumes:
       - ./logs:/app/logs
+      - ./memory:/app/memory
+      - ./.env:/app/.env:ro
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]

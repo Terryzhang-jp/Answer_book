@@ -90,7 +90,7 @@ export default function ScenarioQuestionModal({
           {/* 核心理念 */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <p className="text-blue-800 text-center font-medium">
-              💭 "你的未来生活只是你能想象到的生活"
+              💭 &ldquo;你的未来生活只是你能想象到的生活&rdquo;
             </p>
           </div>
 

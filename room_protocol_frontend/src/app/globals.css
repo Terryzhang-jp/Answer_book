@@ -3,6 +3,10 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  
+  /* 书本样式变量 */
+  --book-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  --page-gradient: linear-gradient(135deg, #fefefe 0%, #f8f9fa 100%);
 }
 
 @theme inline {
@@ -22,5 +26,105 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Georgia', 'Times New Roman', serif;
+}
+
+/* 电子书阅读器样式 */
+.ebook-reader {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  line-height: 1.6;
+  color: #000;
+  background: #fff;
+}
+
+.ebook-page {
+  background: #fff;
+  color: #000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.ebook-text {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  line-height: 1.7;
+  color: #000;
+  text-align: justify;
+  hyphens: auto;
+}
+
+/* 书本样式 */
+.bg-page-gradient {
+  background: var(--page-gradient);
+}
+
+.shadow-glow-book {
+  box-shadow: var(--book-shadow);
+}
+
+/* 文字发光效果 */
+.text-glow {
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+.text-glow-faint {
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.1);
+}
+
+/* 专家颜色变量 */
+:root {
+  --blue-rgb: 59, 130, 246;
+  --amber-rgb: 245, 158, 11;
+  --green-rgb: 34, 197, 94;
+  --purple-rgb: 147, 51, 234;
+  --red-rgb: 239, 68, 68;
+  --orange-rgb: 249, 115, 22;
+  --indigo-rgb: 99, 102, 241;
+  --teal-rgb: 20, 184, 166;
+  --cyan-rgb: 6, 182, 212;
+  --gray-rgb: 107, 114, 128;
+  --slate-rgb: 100, 116, 139;
+}
+
+/* 信件样式 */
+.letter-paper {
+  background: linear-gradient(to bottom, #fffbeb 0%, #fef3c7 100%);
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.letter-lines {
+  background-image: 
+    linear-gradient(transparent 39px, #fbbf24 39px, #fbbf24 41px, transparent 41px);
+  background-size: 100% 40px;
+}
+
+.handwriting {
+  font-family: 'Noto Serif SC', 'Source Han Serif SC', 'Times New Roman', serif;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+
+.ink-effect {
+  color: #374151;
+  text-shadow: 0.5px 0.5px 0px rgba(0, 0, 0, 0.1);
+}
+
+/* 纸张质感 */
+.paper-texture {
+  position: relative;
+}
+
+.paper-texture::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.02) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255, 119, 48, 0.02) 0%, transparent 50%),
+    radial-gradient(circle at 40% 80%, rgba(120, 119, 198, 0.02) 0%, transparent 50%);
+  pointer-events: none;
 }

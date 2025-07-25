@@ -1,51 +1,60 @@
+import axios from 'axios';
 import { ReportRequest, ReportResponse, ReportStatusResponse, ReportData } from '../types/report';
 
+// API基础配置
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+const apiClient = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  timeout: 120000, // 2分钟超时，给LLM足够时间
+});
+
+// 错误处理
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    console.error('Report API Error:', error);
+
+    if (error.response) {
+      // 服务器返回错误状态码
+      const message = error.response.data?.detail || error.response.data?.message || '服务器错误';
+      throw new Error(`${error.response.status}: ${message}`);
+    } else if (error.request) {
+      // 请求发送但没有收到响应
+      throw new Error('网络连接失败，请检查网络或后端服务');
+    } else {
+      // 其他错误
+      throw new Error(error.message || '未知错误');
+    }
+  }
+);
 
 export class ReportApiService {
   /**
    * 生成报告
    */
   static async generateReport(request: ReportRequest): Promise<ReportResponse> {
-    const response = await fetch(`${API_BASE_URL}/api/report/generate`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(request),
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    return response.json();
+    const response = await apiClient.post<ReportResponse>('/api/report/generate', request);
+    return response.data;
   }
 
   /**
    * 获取报告生成状态
    */
   static async getReportStatus(taskId: string): Promise<ReportStatusResponse> {
-    const response = await fetch(`${API_BASE_URL}/api/report/status/${taskId}`);
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    return response.json();
+    const response = await apiClient.get<ReportStatusResponse>(`/api/report/status/${taskId}`);
+    return response.data;
   }
 
   /**
    * 获取完整报告
    */
   static async getReport(reportId: string): Promise<{ success: boolean; report: ReportData }> {
-    const response = await fetch(`${API_BASE_URL}/api/report/${reportId}`);
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    return response.json();
+    const response = await apiClient.get<{ success: boolean; report: ReportData }>(`/api/report/${reportId}`);
+    return response.data;
   }
 
   /**

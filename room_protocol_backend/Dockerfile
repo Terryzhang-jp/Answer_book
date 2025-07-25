@@ -1,5 +1,4 @@
-# 答案之书系统 Docker 配置
-
+# Room Protocol Backend - Production Dockerfile
 FROM python:3.11-slim
 
 # 设置工作目录
@@ -20,12 +19,18 @@ RUN pip install --no-cache-dir -r requirements.txt
 # 复制应用代码
 COPY . .
 
-# 暴露端口
-EXPOSE 8000
+# 创建必要目录
+RUN mkdir -p data/conversations logs backup memory
 
 # 设置环境变量
 ENV PYTHONPATH=/app
 ENV PYTHONUNBUFFERED=1
+ENV DEBUG=false
+ENV HOST=0.0.0.0
+ENV PORT=8080
+
+# 暴露端口
+EXPOSE 8080
 
 # 启动命令
-CMD ["python", "main.py"]
+CMD ["python", "start.py"]

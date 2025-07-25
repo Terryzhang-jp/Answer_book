@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     APP_NAME: str = "Room Protocol Backend"
     DEBUG: bool = False
     HOST: str = "0.0.0.0"
-    PORT: int = 8000
+    PORT: int = 8080
     
     # API配置
     API_V1_STR: str = "/api"
@@ -29,7 +29,7 @@ class Settings(BaseSettings):
     # 默认LLM配置
     DEFAULT_MODEL: str = "gemini-2.0-flash-exp"
     DEFAULT_TEMPERATURE: float = 0.7
-    DEFAULT_MAX_TOKENS: int = 4000
+    DEFAULT_MAX_TOKENS: int = 100000  # 设置为10万token，基本无限制
     
     # 记忆系统配置
     MEMORY_DIR: str = "memory"
@@ -38,7 +38,7 @@ class Settings(BaseSettings):
     ENABLE_NEW_MEMORY_SYSTEM: bool = True   # 新记忆系统开关
     MEMORY_SLIDING_WINDOW_SIZE: int = 5     # 滑动窗口大小（保留的最近消息数）
     MEMORY_SUMMARY_MODEL: str = "gemini-1.5-flash"  # 摘要专用模型
-    MEMORY_MAX_TOKENS: int = 2000           # 最大token限制
+    MEMORY_MAX_TOKENS: int = 100000         # 设置为10万token，基本无限制
     MEMORY_SUMMARY_THRESHOLD: int = 10      # 开始摘要的消息数阈值
     ENABLE_ASYNC_ANALYSIS: bool = False     # 启用异步对话分析（改为同步以确保前端显示）
 
@@ -47,7 +47,7 @@ class Settings(BaseSettings):
     MAX_SESSIONS: int = 1000
     
     # CORS配置
-    CORS_ALLOWED_ORIGINS: str = "http://localhost:3000,http://127.0.0.1:3000"  # 开发环境默认值
+    CORS_ALLOWED_ORIGINS: str = "http://localhost:3000,http://127.0.0.1:3000,https://*.vercel.app,https://*.netlify.app,https://room-protocol-frontend.vercel.app"  # 支持开发和生产环境
     CORS_ALLOW_CREDENTIALS: bool = True
     CORS_ALLOW_METHODS: str = "GET,POST,PUT,DELETE,OPTIONS,PATCH"
     CORS_ALLOW_HEADERS: str = "Content-Type,Authorization,X-Requested-With,X-API-Key"

@@ -1,0 +1,16 @@
+# 简单的测试 Dockerfile
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# 只安装必要的依赖
+RUN pip install fastapi uvicorn
+
+# 复制测试服务器
+COPY test_server.py .
+
+# 暴露端口
+EXPOSE 8080
+
+# 启动命令
+CMD ["python", "test_server.py"]

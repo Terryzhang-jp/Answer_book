@@ -7,7 +7,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from api.routes import conversation, health, session, insight, report, scenario, storage_admin
+from api.routes import conversation, health, session, insight, report, scenario, storage_admin, admin
 from api.middleware.auth import OptionalAuthMiddleware
 from config.settings import get_settings
 from core.services.llm_service import LLMService
@@ -56,6 +56,7 @@ app.include_router(insight.router, prefix="/api/insight", tags=["insight"])
 app.include_router(report.router, prefix="/api/report", tags=["report"])
 app.include_router(scenario.router, prefix="/api/scenario", tags=["scenario"])
 app.include_router(storage_admin.router, prefix="/api/admin", tags=["storage-admin"])
+app.include_router(admin.router, prefix="/api/admin", tags=["system-admin"])
 
 
 # 旧的事件处理器已移至lifespan函数中
