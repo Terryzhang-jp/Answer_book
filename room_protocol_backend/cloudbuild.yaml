@@ -29,7 +29,7 @@ steps:
       - '--max-instances'
       - '10'
       - '--set-env-vars'
-      - 'DEBUG=false,HOST=0.0.0.0'
+      - 'DEBUG=false,HOST=0.0.0.0,ENABLE_SUPABASE_STORAGE=true,SUPABASE_DB_HOST=aws-0-ap-southeast-1.pooler.supabase.com,SUPABASE_DB_PORT=6543,SUPABASE_DB_NAME=postgres,SUPABASE_DB_USER=postgres.eymyvtiftpfgtiksnpcz,SUPABASE_DB_PASSWORD=Qaz961264727'
 
 images:
   - 'gcr.io/$PROJECT_ID/room-protocol-backend:$COMMIT_SHA'
