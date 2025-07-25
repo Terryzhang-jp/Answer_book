@@ -66,6 +66,19 @@ class Settings(BaseSettings):
     # 日志配置
     LOG_LEVEL: str = "INFO"
 
+    # Supabase配置
+    SUPABASE_URL: Optional[str] = None
+    SUPABASE_ANON_KEY: Optional[str] = None
+    SUPABASE_SERVICE_ROLE_KEY: Optional[str] = None
+    ENABLE_SUPABASE_STORAGE: bool = False
+
+    # Supabase数据库连接配置
+    SUPABASE_DB_HOST: Optional[str] = None
+    SUPABASE_DB_PORT: int = 6543
+    SUPABASE_DB_NAME: str = "postgres"
+    SUPABASE_DB_USER: Optional[str] = None
+    SUPABASE_DB_PASSWORD: Optional[str] = None
+
     @property
     def allowed_origins(self) -> list[str]:
         """获取允许的CORS源列表"""

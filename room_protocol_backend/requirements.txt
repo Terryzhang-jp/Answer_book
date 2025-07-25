@@ -26,3 +26,7 @@ loguru
 
 # 工具库
 python-multipart
+
+# 数据库
+psycopg2-binary
+supabase

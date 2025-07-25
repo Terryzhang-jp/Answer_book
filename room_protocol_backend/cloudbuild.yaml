@@ -29,7 +29,7 @@ steps:
       - '--max-instances'
       - '10'
       - '--set-env-vars'
-      - 'DEBUG=false,HOST=0.0.0.0,PORT=8000'
+      - 'DEBUG=false,HOST=0.0.0.0'
 
 images:
   - 'gcr.io/$PROJECT_ID/room-protocol-backend:$COMMIT_SHA'

@@ -6,6 +6,10 @@ Cloud Run 启动脚本
 import os
 import sys
 import uvicorn
+from dotenv import load_dotenv
+
+# 加载.env文件
+load_dotenv()
 
 if __name__ == "__main__":
     # 从环境变量获取端口，默认为8080（Cloud Run标准）

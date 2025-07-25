@@ -1,5 +1,5 @@
 """
-统一对话存储实现 - 整合L1缓存和L2文件存储
+统一对话存储实现 - 整合L1缓存、L2文件存储和L3 Supabase存储
 """
 
 import asyncio
@@ -11,30 +11,52 @@ from loguru import logger
 from .storage_interface import ConversationStorageInterface, StorageMetrics
 from .memory_cache import ConversationCache
 from ..services.global_storage import GlobalStorage
+from config.settings import get_settings
 
 
 class UnifiedConversationStorage(ConversationStorageInterface):
-    """统一对话存储 - L1缓存 + L2文件存储"""
-    
+    """统一对话存储 - L1缓存 + L2文件存储 + L3 Supabase存储"""
+
     def __init__(self, enable_cache: bool = True):
+        self.settings = get_settings()
         self.enable_cache = enable_cache
         self.cache = ConversationCache() if enable_cache else None
         self.file_storage = GlobalStorage()
         self.metrics = StorageMetrics()
-        
-        logger.info(f"统一对话存储初始化 - 缓存启用: {enable_cache}")
+
+        # 初始化Supabase存储（如果启用）
+        self.supabase_storage = None
+        if self.settings.ENABLE_SUPABASE_STORAGE:
+            try:
+                from .supabase_storage import SupabaseStorage
+                self.supabase_storage = SupabaseStorage()
+                logger.info("✅ Supabase存储已启用")
+            except Exception as e:
+                logger.warning(f"⚠️ Supabase存储初始化失败: {e}")
+                self.supabase_storage = None
+
+        logger.info(f"统一对话存储初始化 - 缓存启用: {enable_cache}, Supabase启用: {self.supabase_storage is not None}")
     
     async def save_messages(self, thread_id: str, messages: List[BaseMessage]) -> bool:
-        """保存消息 - 同时写入缓存和文件存储"""
+        """保存消息 - L1缓存 + L2文件存储 + L3 Supabase存储"""
         try:
-            # 写入文件存储（主存储）
+            # L2: 写入文件存储（主存储）
             self.file_storage.save_messages(thread_id, messages)
             self.metrics.record_storage_write()
-            
-            # 写入缓存
+
+            # L3: 写入Supabase存储（如果启用）
+            if self.supabase_storage:
+                try:
+                    await self.supabase_storage.save_messages(thread_id, messages)
+                    logger.debug(f"Supabase存储保存成功 - thread_id: {thread_id}")
+                except Exception as e:
+                    logger.warning(f"Supabase存储保存失败 - thread_id: {thread_id}, 错误: {e}")
+                    # Supabase失败不影响整体保存流程
+
+            # L1: 写入缓存
             if self.enable_cache and self.cache:
                 await self.cache.set_messages(thread_id, messages)
-                
+
                 # 更新对话信息
                 info = {
                     "thread_id": thread_id,
@@ -43,27 +65,27 @@ class UnifiedConversationStorage(ConversationStorageInterface):
                     "last_message": messages[-1].content[:100] if messages else ""
                 }
                 await self.cache.set_conversation_info(thread_id, info)
-            
+
             logger.debug(f"消息保存成功 - thread_id: {thread_id}, 消息数: {len(messages)}")
             return True
-            
+
         except Exception as e:
             self.metrics.record_error()
             logger.error(f"消息保存失败 - thread_id: {thread_id}, 错误: {e}")
             return False
     
     async def get_messages(self, thread_id: str, limit: Optional[int] = None) -> List[BaseMessage]:
-        """获取消息 - 优先从缓存，fallback到文件存储"""
+        """获取消息 - L1缓存 → L2文件存储 → L3 Supabase存储"""
         try:
             messages = []
-            
-            # 先尝试从缓存获取
+
+            # L1: 先尝试从缓存获取
             if self.enable_cache and self.cache:
                 messages = await self.cache.get_messages(thread_id)
                 if messages:
                     self.metrics.record_cache_hit()
-                    logger.debug(f"缓存命中 - thread_id: {thread_id}, 消息数: {len(messages)}")
-                    
+                    logger.debug(f"L1缓存命中 - thread_id: {thread_id}, 消息数: {len(messages)}")
+
                     # 如果需要更多消息，从文件存储补充
                     if limit and len(messages) < limit:
                         file_messages = self.file_storage.get_messages(thread_id)
@@ -72,15 +94,30 @@ class UnifiedConversationStorage(ConversationStorageInterface):
                             self.metrics.record_storage_read()
                 else:
                     self.metrics.record_cache_miss()
-            
-            # 如果缓存未命中，从文件存储获取
+
+            # L2: 如果缓存未命中，从文件存储获取
             if not messages:
                 messages = self.file_storage.get_messages(thread_id)
                 self.metrics.record_storage_read()
-                
+                logger.debug(f"L2文件存储获取 - thread_id: {thread_id}, 消息数: {len(messages)}")
+
                 # 将数据加载到缓存
                 if self.enable_cache and self.cache and messages:
                     await self.cache.set_messages(thread_id, messages)
+
+            # L3: 如果文件存储也没有，尝试从Supabase获取
+            if not messages and self.supabase_storage:
+                try:
+                    messages = await self.supabase_storage.get_messages(thread_id)
+                    if messages:
+                        logger.debug(f"L3 Supabase存储获取 - thread_id: {thread_id}, 消息数: {len(messages)}")
+
+                        # 回写到文件存储和缓存
+                        self.file_storage.save_messages(thread_id, messages)
+                        if self.enable_cache and self.cache:
+                            await self.cache.set_messages(thread_id, messages)
+                except Exception as e:
+                    logger.warning(f"Supabase存储获取失败 - thread_id: {thread_id}, 错误: {e}")
             
             # 应用limit限制
             if limit and len(messages) > limit:
