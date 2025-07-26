@@ -30,3 +30,6 @@ python-multipart
 # 数据库
 psycopg2-binary
 supabase
+
+# 异步支持
+nest-asyncio

@@ -78,27 +78,69 @@ class ConversationService:
         if session_id not in self.chat_histories:
             self.chat_histories[session_id] = InMemoryChatMessageHistory()
 
-            # 如果启用了统一存储，尝试从存储加载历史消息
+            # 如果启用了统一存储，同步加载历史消息
             if self.unified_storage:
                 try:
                     import asyncio
-                    # 在同步方法中调用异步方法
+                    # 同步加载历史消息，确保在返回前完成
                     loop = asyncio.get_event_loop()
                     if loop.is_running():
-                        # 如果事件循环正在运行，创建任务
-                        asyncio.create_task(self._load_history_from_storage(session_id))
+                        # 如果事件循环正在运行，使用同步方式获取
+                        # 先尝试从文件存储获取（同步）
+                        messages = self.unified_storage.file_storage.get_messages(session_id)
+                        if not messages and self.unified_storage.supabase_storage:
+                            # 如果文件存储没有，创建一个新的事件循环来获取Supabase数据
+                            try:
+                                import nest_asyncio
+                                nest_asyncio.apply()
+                                messages = loop.run_until_complete(self.unified_storage.supabase_storage.get_messages(session_id))
+                                # 回写到文件存储
+                                if messages:
+                                    self.unified_storage.file_storage.save_messages(session_id, messages)
+                            except ImportError:
+                                # 如果没有nest_asyncio，使用线程池
+                                import concurrent.futures
+                                with concurrent.futures.ThreadPoolExecutor() as executor:
+                                    future = executor.submit(asyncio.run, self.unified_storage.supabase_storage.get_messages(session_id))
+                                    messages = future.result(timeout=5)  # 5秒超时
+                                    if messages:
+                                        self.unified_storage.file_storage.save_messages(session_id, messages)
+                            except Exception as e:
+                                print(f"从Supabase加载历史失败: {e}")
+                                messages = []
                     else:
                         # 如果没有运行的事件循环，直接运行
                         messages = loop.run_until_complete(self.unified_storage.get_messages(session_id))
-                        for message in messages:
-                            self.chat_histories[session_id].add_message(message)
+
+                    # 将消息添加到内存历史
+                    for message in messages:
+                        self.chat_histories[session_id].add_message(message)
+
+                    print(f"从统一存储加载历史成功: {session_id}, 消息数: {len(messages)}")
                 except Exception as e:
                     print(f"从统一存储加载历史失败: {e}")
 
         return self.chat_histories[session_id]
 
+    async def get_session_history_async(self, session_id: str) -> InMemoryChatMessageHistory:
+        """异步获取或创建会话历史 - 确保历史消息完全加载后再返回"""
+        if session_id not in self.chat_histories:
+            self.chat_histories[session_id] = InMemoryChatMessageHistory()
+
+            # 同步加载历史消息，确保完成后再返回
+            if self.unified_storage:
+                try:
+                    messages = await self.unified_storage.get_messages(session_id)
+                    for message in messages:
+                        self.chat_histories[session_id].add_message(message)
+                    print(f"异步加载历史成功: {session_id}, 消息数: {len(messages)}")
+                except Exception as e:
+                    print(f"异步加载历史失败: {e}")
+
+        return self.chat_histories[session_id]
+
     async def _load_history_from_storage(self, session_id: str):
-        """异步加载历史消息到内存"""
+        """异步加载历史消息到内存（已废弃，使用get_session_history_async代替）"""
         try:
             if self.unified_storage:
                 messages = await self.unified_storage.get_messages(session_id)
@@ -117,17 +159,25 @@ class ConversationService:
             return await self.process_question_v1(request)
 
     async def process_question_v1(self, request: QuestionRequest) -> AnswerResponse:
-        """处理用户问题 - 原有逻辑（重命名但不修改）"""
+        """处理用户问题 - 原有逻辑（使用异步历史加载）"""
         # 确定线程ID：如果提供了thread_id则继续现有对话，否则创建新对话
-        if request.thread_id and request.thread_id in self.chat_histories:
+        if request.thread_id:
             thread_id = request.thread_id
             is_new_conversation = False
         else:
             thread_id = str(uuid.uuid4())
             is_new_conversation = True
 
-        # 获取会话历史
-        history = self.get_session_history(thread_id)
+        # 🔧 关键修复：使用异步方法确保历史消息完全加载
+        history = await self.get_session_history_async(thread_id)
+
+        # 重新判断是否为新对话（基于实际的历史消息数量）
+        if not is_new_conversation and len(history.messages) == 0:
+            # 如果指定了thread_id但没有历史消息，可能是新对话
+            is_new_conversation = True
+        elif is_new_conversation and len(history.messages) > 0:
+            # 如果没有指定thread_id但有历史消息，说明是继续对话
+            is_new_conversation = False
         
         # 检查是否是系统对话
         if self._is_system_dialogue(request.question):
@@ -164,12 +214,13 @@ class ConversationService:
         ]
 
         try:
-            # 使用带记忆的LLM调用
+            # 🔧 关键修复：使用已经加载好历史的方法
+            # 由于历史已经在get_session_history_async中加载，这里直接使用同步方法
             config = {"configurable": {"session_id": thread_id}}
             response_content = await LLMService.generate_response_with_history(
                 messages,
                 config,
-                self.get_session_history
+                lambda session_id: self.chat_histories.get(session_id, InMemoryChatMessageHistory())
             )
 
             # 清理响应内容（移除可能的markdown格式）
