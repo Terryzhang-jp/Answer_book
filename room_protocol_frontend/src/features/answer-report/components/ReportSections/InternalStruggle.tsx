@@ -9,17 +9,17 @@ interface InternalStruggleSectionProps {
 export default function InternalStruggleSection({ data }: InternalStruggleSectionProps) {
   return (
     <div className="space-y-8">
-      {/* 标题 */}
+      {/* Title */}
       <div className="text-center">
-        <h2 className="text-3xl font-bold text-gray-900 mb-2">第二部分：内心博弈分析</h2>
-        <p className="text-gray-600">将内心不可见的思想斗争，以客观、可视化的方式呈现</p>
+        <h2 className="text-3xl font-bold text-gray-900 mb-2">Part 2: Internal Struggle Analysis</h2>
+        <p className="text-gray-600">Presenting invisible inner thought battles in an objective, visualized manner</p>
       </div>
 
-      {/* 博弈双方 */}
+      {/* Contending Parties */}
       <div className="bg-purple-50 rounded-lg p-6">
         <div className="flex items-center mb-4">
           <Users className="w-6 h-6 text-purple-600 mr-3" />
-          <h3 className="text-xl font-semibold text-gray-900">博弈双方</h3>
+          <h3 className="text-xl font-semibold text-gray-900">Contending Parties</h3>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {data.contending_parties.map((party, index) => (
@@ -37,14 +37,14 @@ export default function InternalStruggleSection({ data }: InternalStruggleSectio
         </div>
       </div>
 
-      {/* 证据清单 */}
+      {/* Evidence List */}
       <div className="bg-indigo-50 rounded-lg p-6">
         <div className="flex items-center mb-4">
           <MessageSquare className="w-6 h-6 text-indigo-600 mr-3" />
-          <h3 className="text-xl font-semibold text-gray-900">证据清单</h3>
+          <h3 className="text-xl font-semibold text-gray-900">Evidence List</h3>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* 第一方证据 */}
+          {/* Party 1 Evidence */}
           <div className="bg-white rounded-lg p-4 border-l-4 border-blue-500">
             <h4 className="font-semibold text-blue-600 mb-3">{data.contending_parties[0]}</h4>
             <div className="space-y-3">
@@ -64,7 +64,7 @@ export default function InternalStruggleSection({ data }: InternalStruggleSectio
             </div>
           </div>
 
-          {/* 第二方证据 */}
+          {/* Party 2 Evidence */}
           <div className="bg-white rounded-lg p-4 border-l-4 border-orange-500">
             <h4 className="font-semibold text-orange-600 mb-3">{data.contending_parties[1]}</h4>
             <div className="space-y-3">
@@ -86,24 +86,24 @@ export default function InternalStruggleSection({ data }: InternalStruggleSectio
         </div>
       </div>
 
-      {/* 博弈结果 */}
+      {/* Struggle Outcome */}
       <div className="bg-yellow-50 rounded-lg p-6">
         <div className="flex items-center mb-4">
           <Trophy className="w-6 h-6 text-yellow-600 mr-3" />
-          <h3 className="text-xl font-semibold text-gray-900">博弈结果</h3>
+          <h3 className="text-xl font-semibold text-gray-900">Struggle Outcome</h3>
         </div>
         <div className="bg-white rounded-lg p-6 border-l-4 border-yellow-500">
           <p className="text-gray-800 leading-relaxed">{data.outcome}</p>
         </div>
       </div>
 
-      {/* 核心原则提醒 */}
+      {/* Core Principle Reminder */}
       <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
         <p className="text-center text-gray-700 italic">
-          "你的行为和语言，是你内心价值观的投票。"
+          "Your actions and words are votes for your inner values."
         </p>
         <p className="text-center text-sm text-gray-500 mt-1">
-          — 内心博弈分析核心原则
+          — Core Principle of Internal Struggle Analysis
         </p>
       </div>
     </div>

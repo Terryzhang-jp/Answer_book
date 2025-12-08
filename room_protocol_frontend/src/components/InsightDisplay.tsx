@@ -19,11 +19,11 @@ export default function InsightDisplay({
   const [error, setError] = useState<string | null>(null);
   const { insightDisplay, startInsightDisplay, setInsightLoading } = useConversationStore();
 
-  // 使用ref来跟踪是否已经生成过，避免状态更新导致的重复调用
+  // Use ref to track if already generated, avoid duplicate calls from state updates
   const hasGeneratedRef = useRef(false);
   const isGeneratingRef = useRef(false);
 
-  // 当组件激活时生成insight
+  // Generate insight when component is activated
   useEffect(() => {
     console.log('InsightDisplay mounted/updated:', {
       isActive: insightDisplay.isActive,
@@ -33,20 +33,20 @@ export default function InsightDisplay({
       sessionId: insightDisplay.sessionId
     });
 
-    // 只有在激活状态、没有insight内容、没有生成过、没有正在生成时才调用
+    // Only call when active, no insight content, not generated before, and not currently generating
     if (insightDisplay.isActive &&
         !insightDisplay.insight &&
         !hasGeneratedRef.current &&
         !isGeneratingRef.current) {
 
-      console.log('开始生成insight');
+      console.log('Starting to generate insight');
       hasGeneratedRef.current = true;
       isGeneratingRef.current = true;
       generateInsight();
     }
   }, [insightDisplay.isActive, insightDisplay.insight]);
 
-  // 当组件卸载或重置时，重置ref
+  // Reset ref when component unmounts or resets
   useEffect(() => {
     if (!insightDisplay.isActive) {
       hasGeneratedRef.current = false;
@@ -56,32 +56,32 @@ export default function InsightDisplay({
 
   const generateInsight = async () => {
     const callId = Date.now();
-    console.log(`[${callId}] generateInsight 开始调用`, { userId, threadId });
+    console.log(`[${callId}] generateInsight starting`, { userId, threadId });
 
     try {
       setError(null);
       setInsightLoading(true);
 
-      console.log(`[${callId}] 调用 ApiService.generateInsight`);
+      console.log(`[${callId}] Calling ApiService.generateInsight`);
       const response = await ApiService.generateInsight({
         user_id: userId,
         thread_id: threadId,
       });
 
-      console.log(`[${callId}] API响应:`, response);
+      console.log(`[${callId}] API response:`, response);
 
       if (response.success && response.insight) {
         startInsightDisplay(response.session_id || '', response.insight);
       } else {
-        throw new Error(response.message || '生成insight失败');
+        throw new Error(response.message || 'Failed to generate insight');
       }
     } catch (err) {
-      console.error(`[${callId}] 生成insight失败:`, err);
-      setError(err instanceof Error ? err.message : '生成失败');
+      console.error(`[${callId}] Failed to generate insight:`, err);
+      setError(err instanceof Error ? err.message : 'Generation failed');
     } finally {
       setInsightLoading(false);
       isGeneratingRef.current = false;
-      console.log(`[${callId}] generateInsight 调用结束`);
+      console.log(`[${callId}] generateInsight call ended`);
     }
   };
 
@@ -110,7 +110,7 @@ export default function InsightDisplay({
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-2">
             <Lightbulb className="w-5 h-5 text-yellow-500" />
-            <h3 className="text-lg font-semibold text-gray-800">智慧洞察</h3>
+            <h3 className="text-lg font-semibold text-gray-800">Wisdom Insight</h3>
           </div>
           <button
             onClick={handleSkip}
@@ -124,7 +124,7 @@ export default function InsightDisplay({
           {insightDisplay.isLoading ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
-              <span className="ml-2 text-gray-600">正在生成智慧洞察...</span>
+              <span className="ml-2 text-gray-600">Generating wisdom insight...</span>
             </div>
           ) : error ? (
             <div className="text-center py-8">
@@ -133,7 +133,7 @@ export default function InsightDisplay({
                 onClick={handleRetry}
                 className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
               >
-                重试
+                Retry
               </button>
             </div>
           ) : insightDisplay.insight ? (
@@ -142,12 +142,12 @@ export default function InsightDisplay({
                 {insightDisplay.insight}
               </div>
               <p className="text-sm text-gray-500">
-                在等待智者回答的过程中，让这句话陪伴您思考
+                Let this thought accompany you while waiting for the wise to respond
               </p>
             </div>
           ) : (
             <div className="text-center py-8">
-              <p className="text-gray-600">准备生成洞察...</p>
+              <p className="text-gray-600">Preparing to generate insight...</p>
             </div>
           )}
         </div>
@@ -158,7 +158,7 @@ export default function InsightDisplay({
               onClick={handleComplete}
               className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
             >
-              继续
+              Continue
             </button>
           </div>
         )}

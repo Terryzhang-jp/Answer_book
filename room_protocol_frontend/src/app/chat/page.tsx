@@ -34,8 +34,8 @@ export default function ChatPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [expandedExperts, setExpandedExperts] = useState<Set<string>>(new Set());
 
-  const [sequentialMode, setSequentialMode] = useState(true); // 顺序显示模式，默认开启
-  const [completedGuests, setCompletedGuests] = useState<Set<string>>(new Set()); // 已完成的嘉宾
+  const [sequentialMode, setSequentialMode] = useState(true); // Sequential display mode, enabled by default
+  const [completedGuests, setCompletedGuests] = useState<Set<string>>(new Set()); // Completed guests
   
   const {
     messages,
@@ -57,14 +57,14 @@ export default function ChatPage() {
     skipInsightDisplay
   } = useConversationStore();
 
-  // 报告生成状态
+  // Report generation status
   const {
     isGenerating,
     generationStatus,
     currentProgress
   } = useReportStore();
 
-  // 如果没有对话，重定向到首页
+  // If no conversation, redirect to home page
   useEffect(() => {
     if (!currentThreadId && messages.length === 0) {
       router.push('/');
@@ -84,12 +84,12 @@ export default function ChatPage() {
 
       addUserMessage(newQuestion);
 
-      // 暂时禁用insight生成
-      // console.log('重置insight状态，开始新的insight生成');
-      // resetInsightDisplay(); // 先重置状态
+      // Temporarily disable insight generation
+      // console.log('Reset insight state, start new insight generation');
+      // resetInsightDisplay(); // Reset state first
 
-      // console.log('启动insight显示');
-      // startInsightDisplay('', ''); // 直接启动显示状态
+      // console.log('Start insight display');
+      // startInsightDisplay('', ''); // Directly start display state
 
       const response = await ApiService.askQuestion({
         question: newQuestion.trim(),
@@ -97,21 +97,21 @@ export default function ChatPage() {
         thread_id: currentThreadId || undefined, // 传递当前的thread_id以继续对话
       });
 
-      // API调用完成，关闭insight显示（已禁用）
-      // console.log('API调用完成，关闭insight显示');
+      // API call complete, close insight display (disabled)
+      // console.log('API call complete, close insight display');
       // completeInsightDisplay();
 
       addResponse(response);
       setNewQuestion('');
-      // 清理完成状态，为新的对话做准备
+      // Clear completed state, prepare for new conversation
       setCompletedGuests(new Set());
     } catch (error) {
-      console.error('提问失败:', error);
-      setError(error instanceof Error ? error.message : '提问失败，请重试');
+      console.error('Question failed:', error);
+      setError(error instanceof Error ? error.message : 'Failed to submit question, please try again');
     } finally {
       setIsLoading(false);
       setLoading(false);
-      // 注意：不在这里关闭潜意识探测，让它自然完成
+      // Note: Don't close subconscious detection here, let it complete naturally
     }
   };
 
@@ -121,32 +121,32 @@ export default function ChatPage() {
   };
 
   const handleStartNewDiscussion = () => {
-    // 确认用户是否要开启新讨论
+    // Confirm if user wants to start a new discussion
     if (messages.length > 0) {
-      const confirmed = window.confirm('确定要开启新的讨论吗？当前的对话记录将被清空。');
+      const confirmed = window.confirm('Are you sure you want to start a new discussion? The current conversation will be cleared.');
       if (!confirmed) return;
     }
 
-    // 清空所有数据并跳转到首页
+    // Clear all data and navigate to home page
     startNewDiscussion();
     router.push('/');
   };
 
 
 
-  // Insight显示完成处理
+  // Insight display completion handler
   const handleInsightComplete = () => {
-    console.log('Insight显示完成');
+    console.log('Insight display complete');
     completeInsightDisplay();
   };
 
-  // Insight显示跳过处理
+  // Insight display skip handler
   const handleInsightSkip = () => {
-    console.log('用户跳过Insight显示');
+    console.log('User skipped Insight display');
     skipInsightDisplay();
   };
 
-  // 切换专家展开状态
+  // Toggle expert expansion state
   const toggleExpertExpansion = (expertName: string) => {
     setExpandedExperts(prev => {
       const newSet = new Set(prev);
@@ -159,20 +159,20 @@ export default function ChatPage() {
     });
   };
 
-  // 获取所有消息并按时间排序（用于统一时间线）
+  // Get all messages sorted by time (for unified timeline)
   const getAllMessagesInOrder = () => {
     return [...messages].sort((a, b) =>
       new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
     );
   };
 
-  // 获取不同类型的消息（用于右栏显示）
+  // Get different types of messages (for right panel display)
   const userMessages = messages.filter(msg => msg.type === 'user');
   const systemMessages = messages.filter(msg => msg.type === 'system');
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black">
-      {/* 房间宣告栏 - 顶部全宽 */}
+      {/* Room announcement bar - full width at top */}
       <AnimatePresence>
         {roomAnnouncement && (
           <motion.div
@@ -184,7 +184,7 @@ export default function ChatPage() {
             <div className="max-w-7xl mx-auto text-center">
               <div className="flex items-center justify-center mb-2">
                 <Settings className="w-5 h-5 text-amber-300 mr-2" />
-                <span className="text-sm text-amber-300 font-semibold">[房间宣告 - Centered]</span>
+                <span className="text-sm text-amber-300 font-semibold">[Room Announcement - Centered]</span>
               </div>
               <p className="text-amber-100 font-medium text-lg">{roomAnnouncement}</p>
             </div>
@@ -192,17 +192,17 @@ export default function ChatPage() {
         )}
       </AnimatePresence>
 
-      {/* 主要内容区域 - 三栏布局 */}
+      {/* Main content area - three column layout */}
       <div className={`flex ${roomAnnouncement ? 'h-[calc(100vh-80px)]' : 'h-screen'}`}>
-        {/* 左栏 - 分析展示区域 (30%) */}
+        {/* Left panel - Analysis display area (30%) */}
         <div className="w-[30%] bg-white border-r border-gray-300 p-4 overflow-y-auto">
           <h2 className="text-lg font-semibold text-black mb-4 flex items-center">
             <BarChart3 className="w-5 h-5 mr-2 text-gray-600" />
-            对话分析
+            Conversation Analysis
           </h2>
 
           <div className="space-y-4">
-            {/* 流式报告生成进度 */}
+            {/* Streaming report generation progress */}
             {isGenerating && (
               <StreamingProgress
                 progress={currentProgress}
@@ -213,23 +213,23 @@ export default function ChatPage() {
 
             {conversationAnalysis && !isGenerating ? (
               <>
-                {/* 用户问题分析 */}
+                {/* User question analysis */}
                 <div className="bg-white border border-gray-300 rounded-xl p-4">
                   <h3 className="text-black font-semibold mb-2 flex items-center">
                     <Target className="w-4 h-4 mr-2" />
-                    问题分析
+                    Question Analysis
                   </h3>
                   <p className="text-gray-800 text-sm leading-relaxed">
                     {conversationAnalysis.user_question_analysis}
                   </p>
                 </div>
 
-                {/* 专家邀请理由 */}
+                {/* Expert invitation reason */}
                 {conversationAnalysis.expert_selection_reason && (
                   <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-5 shadow-sm">
                     <h3 className="text-black font-semibold mb-3 flex items-center">
                       <User className="w-5 h-5 mr-2 text-blue-600" />
-                      专家邀请理由
+                      Expert Invitation Reason
                     </h3>
                     <div className="text-gray-800 text-sm leading-relaxed whitespace-pre-line">
                       {conversationAnalysis.expert_selection_reason}
@@ -237,18 +237,18 @@ export default function ChatPage() {
                   </div>
                 )}
 
-                {/* 对话纪要 */}
+                {/* Conversation summary */}
                 {conversationAnalysis.conversation_timeline && conversationAnalysis.conversation_timeline.length > 0 && (
                   <div className="bg-gray-50 rounded-lg p-4">
                     <h3 className="text-black font-semibold mb-3 flex items-center">
                       <MessageSquare className="w-4 h-4 mr-2 text-gray-600" />
-                      对话纪要
+                      Conversation Summary
                     </h3>
                     <div className="space-y-2">
                       {conversationAnalysis.conversation_timeline.map((entry, index) => (
                         <div key={index} className="text-sm leading-relaxed">
                           <span className={`font-medium ${
-                            entry.speaker === '用户' ? 'text-blue-600' : 'text-green-600'
+                            entry.speaker === '用户' || entry.speaker === 'User' ? 'text-blue-600' : 'text-green-600'
                           }`}>
                             • {entry.speaker}
                           </span>
@@ -261,20 +261,20 @@ export default function ChatPage() {
                   </div>
                 )}
 
-                {/* 对话演进 */}
+                {/* Conversation evolution */}
                 <div className="bg-white border border-gray-300 rounded-xl p-4">
                   <h3 className="text-black font-semibold mb-2 flex items-center">
                     <TrendingUp className="w-4 h-4 mr-2" />
-                    对话演进
+                    Conversation Evolution
                   </h3>
                   <div className="space-y-2">
                     <div>
-                      <p className="text-gray-700 text-xs font-medium mb-1">讨论深度:</p>
+                      <p className="text-gray-700 text-xs font-medium mb-1">Discussion Depth:</p>
                       <p className="text-gray-800 text-sm">{conversationAnalysis.conversation_evolution.discussion_depth}</p>
                     </div>
                     {conversationAnalysis.conversation_evolution.topic_progression.length > 0 && (
                       <div>
-                        <p className="text-gray-700 text-xs font-medium mb-1">话题演进:</p>
+                        <p className="text-gray-700 text-xs font-medium mb-1">Topic Progression:</p>
                         <ul className="text-gray-800 text-sm space-y-1">
                           {conversationAnalysis.conversation_evolution.topic_progression.map((topic, index) => (
                             <li key={index} className="text-xs">• {topic}</li>
@@ -285,7 +285,7 @@ export default function ChatPage() {
                   </div>
                 </div>
 
-                {/* 专家洞察 - 按嘉宾分组折叠 */}
+                {/* Expert insights - grouped by guest with collapse */}
                 {conversationAnalysis.all_experts_insights.map((expert) => (
                   <div key={expert.expert_name} className="bg-white border border-gray-300 rounded-xl">
                     <button
@@ -300,7 +300,7 @@ export default function ChatPage() {
                           <div>
                             <h3 className="text-black font-semibold text-sm">{expert.expert_name}</h3>
                             <p className="text-gray-600 text-xs">
-                              {expert.is_current ? '当前专家' : '历史专家'}
+                              {expert.is_current ? 'Current Expert' : 'Historical Expert'}
                             </p>
                           </div>
                         </div>
@@ -314,10 +314,10 @@ export default function ChatPage() {
 
                     {expandedExperts.has(expert.expert_name) && (
                       <div className="px-4 pb-4 space-y-3">
-                        {/* 专业领域 */}
+                        {/* Areas of expertise */}
                         {expert.expertise_areas.length > 0 && (
                           <div>
-                            <p className="text-gray-700 text-xs font-medium mb-1">专业领域:</p>
+                            <p className="text-gray-700 text-xs font-medium mb-1">Areas of Expertise:</p>
                             <div className="flex flex-wrap gap-1">
                               {expert.expertise_areas.map((area, areaIndex) => (
                                 <span key={areaIndex} className="bg-gray-200 text-gray-800 text-xs px-2 py-1 rounded">
@@ -328,10 +328,10 @@ export default function ChatPage() {
                           </div>
                         )}
 
-                        {/* 核心观点 */}
+                        {/* Key insights */}
                         {expert.key_insights.length > 0 && (
                           <div>
-                            <p className="text-gray-700 text-xs font-medium mb-1">核心观点:</p>
+                            <p className="text-gray-700 text-xs font-medium mb-1">Key Insights:</p>
                             <ul className="text-gray-800 text-xs space-y-1">
                               {expert.key_insights.map((insight, insightIndex) => (
                                 <li key={insightIndex}>• {insight}</li>
@@ -340,12 +340,12 @@ export default function ChatPage() {
                           </div>
                         )}
 
-                        {/* 帮助要点 */}
+                        {/* Helpful points */}
                         {expert.helpful_points.length > 0 && (
                           <div>
                             <p className="text-gray-700 text-xs font-medium mb-1 flex items-center">
                               <Lightbulb className="w-3 h-3 mr-1" />
-                              可帮助的要点:
+                              Helpful Points:
                             </p>
                             <ul className="text-gray-800 text-xs space-y-1">
                               {expert.helpful_points.map((point, pointIndex) => (
@@ -359,12 +359,12 @@ export default function ChatPage() {
                   </div>
                 ))}
 
-                {/* 建议方向 */}
+                {/* Suggested directions */}
                 {conversationAnalysis.suggested_directions.length > 0 && (
                   <div className="bg-white border border-gray-300 rounded-xl p-4">
                     <h3 className="text-black font-semibold mb-2 flex items-center">
                       <Lightbulb className="w-4 h-4 mr-2" />
-                      建议方向
+                      Suggested Directions
                     </h3>
                     <ul className="text-gray-800 text-sm space-y-1">
                       {conversationAnalysis.suggested_directions.map((direction, index) => (
@@ -377,26 +377,26 @@ export default function ChatPage() {
             ) : (
               <div className="text-center text-gray-600 py-8">
                 <BarChart3 className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                <p className="text-sm">暂无分析数据</p>
-                <p className="text-xs mt-1">开始对话后将显示分析结果</p>
+                <p className="text-sm">No analysis data yet</p>
+                <p className="text-xs mt-1">Analysis will appear after starting a conversation</p>
               </div>
             )}
           </div>
         </div>
 
-        {/* 中栏 - 统一时间线 (50%) */}
+        {/* Middle panel - Unified timeline (50%) */}
         <div className="w-1/2 bg-white border-r border-gray-300 flex flex-col">
           <div className="p-4 border-b border-gray-300">
             <h2 className="text-lg font-semibold text-black flex items-center">
               <MessageCircle className="w-5 h-5 mr-2 text-gray-600" />
-              对话时间线
+              Conversation Timeline
             </h2>
           </div>
 
           <div className="flex-1 p-4 overflow-y-auto">
             <div className="space-y-4">
               {getAllMessagesInOrder().map((message, index) => {
-                // 计算当前消息组中的嘉宾索引
+                // Calculate guest index in current message group
                 const allMessages = getAllMessagesInOrder();
                 const currentMessageGroup = allMessages.filter(m =>
                   m.timestamp === message.timestamp && (m.type === 'expert' || m.type === 'system')
@@ -404,16 +404,16 @@ export default function ChatPage() {
                 const guestIndex = currentMessageGroup.findIndex(m => m.id === message.id);
                 const totalGuests = currentMessageGroup.length;
 
-                // 处理嘉宾完成回调
+                // Handle guest completion callback
                 const handleGuestComplete = () => {
                   setCompletedGuests(prev => new Set([...prev, message.id]));
                 };
 
-                // 判断当前嘉宾是否应该开始（顺序模式下）
+                // Determine if current guest should start (in sequential mode)
                 const shouldStart = !sequentialMode || guestIndex === 0 ||
                   (guestIndex > 0 && completedGuests.has(currentMessageGroup[guestIndex - 1]?.id));
                 if (message.type === 'user') {
-                  // 用户消息
+                  // User message
                   return (
                     <motion.div
                       key={message.id}
@@ -427,14 +427,14 @@ export default function ChatPage() {
                           <div className="w-6 h-6 bg-gray-600 rounded-full flex items-center justify-center mr-2">
                             <User className="w-3 h-3 text-white" />
                           </div>
-                          <span className="text-gray-700 text-sm font-medium">用户</span>
+                          <span className="text-gray-700 text-sm font-medium">User</span>
                         </div>
                         <p className="text-black text-sm leading-relaxed">{message.content}</p>
                       </div>
                     </motion.div>
                   );
                 } else if (message.type === 'expert' || message.type === 'system') {
-                  // 专家/系统消息
+                  // Expert/system message
                   return (
                     <motion.div
                       key={message.id}
@@ -444,7 +444,7 @@ export default function ChatPage() {
                       className="flex justify-start"
                     >
                       <div className="max-w-[90%] bg-white border border-gray-300 rounded-2xl p-4">
-                        {/* 角色名称 */}
+                        {/* Character name */}
                         <div className="flex items-center mb-3">
                           <div className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center mr-3">
                             <Brain className="w-4 h-4 text-white" />
@@ -473,36 +473,36 @@ export default function ChatPage() {
                 return null;
               })}
 
-              {/* 加载状态 */}
+              {/* Loading state */}
               {(isLoading || storeLoading) && (
                 <div className="flex justify-center">
                   <div className="bg-gray-800/50 rounded-2xl p-4 flex items-center space-x-3">
                     <div className="w-6 h-6 border-2 border-amber-400 border-t-transparent rounded-full animate-spin"></div>
-                    <span className="text-gray-300 text-sm">智者正在思考...</span>
+                    <span className="text-gray-300 text-sm">The wise are thinking...</span>
                   </div>
                 </div>
               )}
             </div>
           </div>
         </div>
-        {/* 右栏 - 用户交互区域 (20%) */}
+        {/* Right panel - User interaction area (20%) */}
         <div className="w-[20%] bg-white flex flex-col">
-          {/* 顶部 - 系统区域 */}
+          {/* Top - System area */}
           <div className="p-4 border-b border-gray-300">
             <button
               onClick={handleBackToHome}
               className="flex items-center space-x-2 text-gray-600 hover:text-black transition-colors mb-4"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span>返回首页</span>
+              <span>Back to Home</span>
             </button>
 
             <h2 className="text-lg font-semibold text-black mb-3 flex items-center">
               <User className="w-5 h-5 mr-2 text-gray-600" />
-              用户区域
+              User Area
             </h2>
 
-            {/* 显示模式切换 */}
+            {/* Display mode toggle */}
             <div className="mb-4 p-3 bg-gray-50 rounded-lg">
               <label className="flex items-center space-x-2 cursor-pointer">
                 <input
@@ -512,42 +512,42 @@ export default function ChatPage() {
                   className="rounded"
                 />
                 <span className="text-sm text-gray-700">
-                  顺序显示嘉宾（一个接一个）
+                  Sequential guest display (one by one)
                 </span>
               </label>
               <p className="text-xs text-gray-500 mt-1">
-                {sequentialMode ? '嘉宾将依次发言' : '所有嘉宾同时发言'}
+                {sequentialMode ? 'Guests will speak in turn' : 'All guests speak simultaneously'}
               </p>
             </div>
 
-            {/* 系统消息 */}
+            {/* System messages */}
             {systemMessages.map((message) => (
               <div key={message.id} className="bg-white border border-gray-300 rounded-lg p-3 mb-3">
                 <div className="flex items-center mb-2">
                   <Settings className="w-4 h-4 text-gray-600 mr-2" />
-                  <span className="text-sm text-black font-medium">房间管理员</span>
+                  <span className="text-sm text-black font-medium">Room Admin</span>
                 </div>
                 <p className="text-gray-800 text-sm">{message.content}</p>
               </div>
             ))}
           </div>
 
-          {/* 中部 - 用户消息区域 */}
+          {/* Middle - User message area */}
           <div className="flex-1 p-4 overflow-y-auto">
-            <h3 className="text-sm font-medium text-black mb-3">我的提问历史</h3>
+            <h3 className="text-sm font-medium text-black mb-3">My Question History</h3>
             <div className="space-y-3">
               {userMessages.map((message) => (
                 <div key={message.id} className="bg-white border border-gray-300 rounded-lg p-3">
                   <div className="flex items-center mb-2">
                     <User className="w-4 h-4 text-gray-600 mr-2" />
-                    <span className="text-sm text-black font-medium">我</span>
+                    <span className="text-sm text-black font-medium">Me</span>
                   </div>
                   <p className="text-gray-800 text-sm">{message.content}</p>
                 </div>
               ))}
             </div>
 
-            {/* 错误提示 */}
+            {/* Error message */}
             {error && (
               <div className="bg-red-50 border border-red-300 rounded-lg p-3 mt-4">
                 <p className="text-red-800 text-sm">{error}</p>
@@ -555,24 +555,24 @@ export default function ChatPage() {
             )}
           </div>
 
-          {/* 底部 - 操作区域 */}
+          {/* Bottom - Action area */}
           <div className="p-4 border-t border-gray-300 space-y-3">
-            <h3 className="text-sm font-medium text-black mb-2">操作面板</h3>
+            <h3 className="text-sm font-medium text-black mb-2">Action Panel</h3>
 
-            {/* 操作按钮组 */}
+            {/* Action button group */}
             <div className="flex justify-center">
-              {/* 开启新讨论按钮 */}
+              {/* New discussion button */}
               <button
                 onClick={handleStartNewDiscussion}
                 disabled={isLoading}
                 className="py-2 px-4 bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors flex items-center justify-center space-x-2 text-sm"
               >
                 <Plus className="w-4 h-4" />
-                <span>新讨论</span>
+                <span>New Discussion</span>
               </button>
             </div>
 
-            {/* 新问题输入 */}
+            {/* New question input */}
             <form onSubmit={handleNewQuestion} className="space-y-2">
               <textarea
                 value={newQuestion}
@@ -585,12 +585,12 @@ export default function ChatPage() {
                     }
                   }
                 }}
-                placeholder="在当前话题中提出新问题..."
+                placeholder="Ask a new question on the current topic..."
                 className="w-full h-16 px-3 py-2 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent resize-none text-sm"
                 disabled={isLoading}
               />
               <div className="text-xs text-gray-400 text-right">
-                回车发送 • Shift+回车换行
+                Enter to send • Shift+Enter for new line
               </div>
               <button
                 type="submit"
@@ -598,11 +598,11 @@ export default function ChatPage() {
                 className="w-full py-2 px-4 bg-amber-600 hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors flex items-center justify-center space-x-2 text-sm"
               >
                 <Send className="w-4 h-4" />
-                <span>发送问题</span>
+                <span>Send Question</span>
               </button>
             </form>
 
-            {/* 我已获得答案按钮 */}
+            {/* I got the answer button */}
             {currentThreadId && messages.length > 0 && (
               <div className="mt-4 pt-4 border-t border-gray-600">
                 <AnswerButton
@@ -613,9 +613,9 @@ export default function ChatPage() {
               </div>
             )}
 
-            {/* 清空提示 */}
+            {/* Clear hint */}
             <div className="text-xs text-gray-500 text-center">
-              💡 &ldquo;新讨论&rdquo;会清空当前对话，开始全新话题
+              💡 &ldquo;New Discussion&rdquo; will clear the current conversation and start a new topic
             </div>
           </div>
         </div>
@@ -623,7 +623,7 @@ export default function ChatPage() {
 
 
 
-      {/* Insight显示组件 - 暂时禁用 */}
+      {/* Insight display component - temporarily disabled */}
       {/* {currentThreadId && insightDisplay.isActive && (
         <InsightDisplay
           key={`insight-${currentThreadId}-${insightDisplay.sessionId}`}
@@ -634,7 +634,7 @@ export default function ChatPage() {
         />
       )} */}
 
-      {/* 报告生成弹框 */}
+      {/* Report generation modal */}
       {isGenerating && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4 text-center">
@@ -645,13 +645,13 @@ export default function ChatPage() {
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">正在生成报告</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Generating Report</h3>
               <p className="text-gray-600 text-sm">
-                {generationStatus || '正在为您生成专属的答案之书信件...'}
+                {generationStatus || 'Generating your personalized Answer Book letter...'}
               </p>
             </div>
             <div className="text-xs text-gray-500">
-              请稍候，这可能需要几分钟时间
+              Please wait, this may take a few minutes
             </div>
           </div>
         </div>

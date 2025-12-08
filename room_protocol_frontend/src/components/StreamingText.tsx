@@ -4,26 +4,26 @@ import { useState, useEffect, useCallback } from 'react';
 
 interface StreamingTextProps {
   text: string;
-  speed?: number; // 每秒字符数
+  speed?: number; // Characters per second
   onComplete?: () => void;
   className?: string;
-  showSkipButton?: boolean; // 是否显示跳过按钮
-  skipButtonText?: string; // 跳过按钮文本
+  showSkipButton?: boolean; // Whether to show skip button
+  skipButtonText?: string; // Skip button text
 }
 
 export const StreamingText: React.FC<StreamingTextProps> = ({
   text,
-  speed = 10, // 默认每秒20个字符
+  speed = 10, // Default 10 characters per second
   onComplete,
   className = '',
   showSkipButton = false,
-  skipButtonText = '一键显示'
+  skipButtonText = 'Show All'
 }) => {
   const [displayedText, setDisplayedText] = useState('');
   const [isComplete, setIsComplete] = useState(false);
   const [isSkipped, setIsSkipped] = useState(false);
 
-  // 跳过流式效果，直接显示全部内容
+  // Skip streaming effect, show all content directly
   const handleSkip = useCallback(() => {
     setIsSkipped(true);
     setDisplayedText(text);
@@ -43,7 +43,7 @@ export const StreamingText: React.FC<StreamingTextProps> = ({
     setIsSkipped(false);
 
     let currentIndex = 0;
-    const intervalTime = 1000 / speed; // 毫秒间隔
+    const intervalTime = 1000 / speed; // Millisecond interval
 
     const timer = setInterval(() => {
       if (currentIndex < text.length && !isSkipped) {
@@ -68,12 +68,12 @@ export const StreamingText: React.FC<StreamingTextProps> = ({
         {!isComplete && <span className="animate-pulse">|</span>}
       </span>
 
-      {/* 跳过按钮 */}
+      {/* Skip button */}
       {showSkipButton && !isComplete && !isSkipped && (
         <button
           onClick={handleSkip}
           className="ml-2 px-2 py-1 text-xs bg-gray-200 hover:bg-gray-300 text-gray-700 rounded transition-colors"
-          title="跳过流式效果，直接显示全部内容"
+          title="Skip streaming effect, show all content directly"
         >
           {skipButtonText}
         </button>
@@ -90,11 +90,11 @@ interface StreamingCharacterResponseProps {
     speaking?: string;
   };
   speed?: number;
-  guestIndex?: number; // 嘉宾索引
-  totalGuests?: number; // 总嘉宾数
-  onComplete?: () => void; // 完成回调
-  shouldStart?: boolean; // 是否应该开始
-  showSkipButton?: boolean; // 是否显示跳过按钮
+  guestIndex?: number; // Guest index
+  totalGuests?: number; // Total guests
+  onComplete?: () => void; // Completion callback
+  shouldStart?: boolean; // Should start
+  showSkipButton?: boolean; // Whether to show skip button
 }
 
 export const StreamingCharacterResponse: React.FC<StreamingCharacterResponseProps> = ({
@@ -110,18 +110,18 @@ export const StreamingCharacterResponse: React.FC<StreamingCharacterResponseProp
   const [isReady, setIsReady] = useState(false);
   const [isSkipped, setIsSkipped] = useState(false);
 
-  // 一键显示所有内容
+  // Show all content at once
   const handleSkipAll = useCallback(() => {
     setIsSkipped(true);
     setCurrentPhase('complete');
     onComplete?.();
   }, [onComplete]);
 
-  // 处理启动逻辑
+  // Handle startup logic
   useEffect(() => {
     if (shouldStart && !isSkipped) {
-      // 如果应该开始，立即开始（第一个嘉宾）或稍微延迟（后续嘉宾）
-      const delay = guestIndex === 0 ? 0 : 500; // 后续嘉宾稍微延迟500ms
+      // If should start, begin immediately (first guest) or with slight delay (subsequent guests)
+      const delay = guestIndex === 0 ? 0 : 500; // Subsequent guests delay 500ms
       const timer = setTimeout(() => {
         setIsReady(true);
         setCurrentPhase('bodyLanguage');
@@ -132,7 +132,7 @@ export const StreamingCharacterResponse: React.FC<StreamingCharacterResponseProp
   }, [shouldStart, guestIndex, isSkipped]);
 
   const handlePhaseComplete = useCallback(() => {
-    if (isSkipped) return; // 如果已跳过，不处理阶段完成
+    if (isSkipped) return; // If already skipped, don't handle phase completion
 
     if (currentPhase === 'bodyLanguage') {
       setCurrentPhase('thinking');
@@ -140,26 +140,26 @@ export const StreamingCharacterResponse: React.FC<StreamingCharacterResponseProp
       setCurrentPhase('speaking');
     } else if (currentPhase === 'speaking') {
       setCurrentPhase('complete');
-      // 当嘉宾完全完成时，通知父组件
+      // When guest fully completes, notify parent component
       onComplete?.();
     }
   }, [currentPhase, onComplete, isSkipped]);
 
-  // 如果没有肢体语言，直接从思考开始
+  // If no body language, start from thinking
   useEffect(() => {
     if (!message.bodyLanguage && currentPhase === 'bodyLanguage') {
       setCurrentPhase('thinking');
     }
   }, [message.bodyLanguage, currentPhase]);
 
-  // 如果没有思考，从肢体语言直接到发言
+  // If no thinking, go from body language directly to speaking
   useEffect(() => {
     if (!message.thinking && currentPhase === 'thinking') {
       setCurrentPhase('speaking');
     }
   }, [message.thinking, currentPhase]);
 
-  // 如果还在等待，显示等待状态
+  // If still waiting, show waiting state
   if (!isReady) {
     return (
       <div className="space-y-3">
@@ -168,8 +168,8 @@ export const StreamingCharacterResponse: React.FC<StreamingCharacterResponseProp
             <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin mr-2"></div>
             <span className="text-gray-500 text-sm">
               {shouldStart ?
-                `正在准备 ${message.characterName}...` :
-                `等待轮到 ${message.characterName}... (${guestIndex + 1}/${totalGuests})`
+                `Preparing ${message.characterName}...` :
+                `Waiting for ${message.characterName}'s turn... (${guestIndex + 1}/${totalGuests})`
               }
             </span>
           </div>
@@ -180,24 +180,24 @@ export const StreamingCharacterResponse: React.FC<StreamingCharacterResponseProp
 
   return (
     <div className="space-y-3 relative">
-      {/* 一键显示按钮 - 固定在右上角 */}
+      {/* Show all button - fixed at top right */}
       {showSkipButton && currentPhase !== 'complete' && !isSkipped && (
         <div className="fixed top-4 right-4 z-50">
           <button
             onClick={handleSkipAll}
             className="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow-lg transition-colors flex items-center space-x-2"
-            title="跳过流式效果，直接显示全部内容"
+            title="Skip streaming effect, show all content directly"
           >
             <span>⚡</span>
-            <span>一键显示</span>
+            <span>Show All</span>
           </button>
         </div>
       )}
-      {/* 肢体语言 */}
+      {/* Body Language */}
       {message.bodyLanguage && (
         <div className="bg-purple-800/20 border-l-4 border-purple-400 p-3 rounded">
           <div className="flex items-center mb-2">
-            <span className="text-black font-medium text-sm">🎭 肢体语言</span>
+            <span className="text-black font-medium text-sm">🎭 Body Language</span>
           </div>
           <div className="text-black text-sm italic leading-relaxed">
             {currentPhase === 'bodyLanguage' && !isSkipped ? (
@@ -213,11 +213,11 @@ export const StreamingCharacterResponse: React.FC<StreamingCharacterResponseProp
         </div>
       )}
 
-      {/* 内心思考 */}
+      {/* Inner Thoughts */}
       {message.thinking && (currentPhase === 'thinking' || currentPhase === 'speaking' || currentPhase === 'complete') && (
         <div className="bg-orange-800/20 border-l-4 border-orange-400 p-3 rounded">
           <div className="flex items-center mb-2">
-            <span className="text-black font-medium text-sm">💭 内心思考</span>
+            <span className="text-black font-medium text-sm">💭 Inner Thoughts</span>
           </div>
           <div className="text-black text-sm italic leading-relaxed">
             {currentPhase === 'thinking' && !isSkipped ? (
@@ -235,11 +235,11 @@ export const StreamingCharacterResponse: React.FC<StreamingCharacterResponseProp
         </div>
       )}
 
-      {/* 发言 */}
+      {/* Speaking */}
       {(currentPhase === 'speaking' || currentPhase === 'complete') && (
         <div className="bg-gray-50 border-l-4 border-gray-400 p-3 rounded">
           <div className="flex items-center mb-2">
-            <span className="text-gray-700 font-medium text-sm">💬 发言</span>
+            <span className="text-gray-700 font-medium text-sm">💬 Speaking</span>
           </div>
           <div className="text-black text-sm leading-relaxed">
             {currentPhase === 'speaking' && !isSkipped ? (

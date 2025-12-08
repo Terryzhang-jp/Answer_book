@@ -7,10 +7,10 @@ import { useReportStore } from '@/features/answer-report/store/reportStore';
 import { ReportData } from '@/features/answer-report/types/report';
 import { ApiService } from '@/services/api';
 
-// 信件显示组件
+// Letter display component
 import LetterDisplay from '@/features/answer-report/components/LetterDisplay';
 
-// 移除旧的分段标题，现在使用信件格式
+// Removed old section headers, now using letter format
 
 export default function ReportPage() {
   const params = useParams();
@@ -27,16 +27,16 @@ export default function ReportPage() {
         setIsLoading(true);
         setError(null);
 
-        // 尝试从API获取报告数据
+        // Try to get report data from API
         const response = await ApiService.getReportByThreadId(threadId);
         if (response.success && response.report) {
           setCurrentReport(response.report);
         } else {
-          setError('未找到报告数据');
+          setError('Report data not found');
         }
       } catch (err) {
-        console.error('加载报告失败:', err);
-        setError('加载报告失败');
+        console.error('Failed to load report:', err);
+        setError('Failed to load report');
       } finally {
         setIsLoading(false);
       }
@@ -45,37 +45,37 @@ export default function ReportPage() {
     loadReport();
   }, [threadId, setCurrentReport]);
 
-  // 获取信件内容
+  // Get letter content
   const getLetterContent = (): string => {
     if (!currentReport?.letter_content?.letter_content) {
-      return '信件内容加载中...';
+      return 'Loading letter content...';
     }
     return currentReport.letter_content.letter_content;
   };
 
-  // 加载状态
+  // Loading state
   if (isLoading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">正在加载报告...</p>
+          <p className="text-gray-600">Loading report...</p>
         </div>
       </div>
     );
   }
 
-  // 错误状态
+  // Error state
   if (error || !currentReport) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-600 mb-4">{error || '未找到报告数据'}</p>
+          <p className="text-gray-600 mb-4">{error || 'Report data not found'}</p>
           <button
             onClick={() => router.push('/')}
             className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
           >
-            开启新的聊天
+            Start a New Chat
           </button>
         </div>
       </div>
@@ -84,7 +84,7 @@ export default function ReportPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* 头部导航 */}
+      {/* Header navigation */}
       <div className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
@@ -93,13 +93,13 @@ export default function ReportPage() {
               className="flex items-center space-x-2 text-gray-600 hover:text-black transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span>开启新的聊天</span>
+              <span>Start a New Chat</span>
             </button>
           </div>
         </div>
       </div>
 
-      {/* 信件内容 */}
+      {/* Letter content */}
       <div className="py-8">
         <LetterDisplay
           letterContent={getLetterContent()}

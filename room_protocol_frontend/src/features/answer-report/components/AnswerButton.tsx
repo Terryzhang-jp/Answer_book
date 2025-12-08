@@ -43,32 +43,32 @@ export default function AnswerButton({ threadId, userId, className = '' }: Answe
 
   const handleGenerateScenarioQuestion = async () => {
     try {
-      console.log('开始生成场景问题', { threadId, userId });
+      console.log('Starting to generate scenario question', { threadId, userId });
 
-      // 重置状态
+      // Reset state
       resetScenarioState();
       setGeneratingQuestion(true);
       setScenarioError(null);
 
-      // 1. 生成场景问题
+      // 1. Generate scenario question
       const questionResponse = await ScenarioApiService.generateScenarioQuestion({
         thread_id: threadId,
         user_id: userId,
       });
 
       if (!questionResponse.success || !questionResponse.question_data) {
-        throw new Error(questionResponse.message || '生成场景问题失败');
+        throw new Error(questionResponse.message || 'Failed to generate scenario question');
       }
 
-      console.log('场景问题生成成功', questionResponse.question_data);
+      console.log('Scenario question generated successfully', questionResponse.question_data);
 
-      // 2. 设置问题数据并显示模态框
+      // 2. Set question data and show modal
       setCurrentQuestion(questionResponse.question_data);
       setIsScenarioModalOpen(true);
 
     } catch (error) {
-      console.error('生成场景问题失败:', error);
-      setScenarioError(error instanceof Error ? error.message : '生成场景问题失败');
+      console.error('Failed to generate scenario question:', error);
+      setScenarioError(error instanceof Error ? error.message : 'Failed to generate scenario question');
     } finally {
       setGeneratingQuestion(false);
     }
@@ -76,51 +76,51 @@ export default function AnswerButton({ threadId, userId, className = '' }: Answe
 
   const handleScenarioComplete = async (scenarioDescription: string) => {
     try {
-      console.log('场景描述完成，开始生成信件报告', { threadId, userId, scenarioDescription });
+      console.log('Scenario description complete, starting letter report generation', { threadId, userId, scenarioDescription });
 
-      // 重置报告状态
+      // Reset report state
       resetReportState();
       setGenerating(true);
-      setGenerationStatus('正在生成您的专属信件...');
+      setGenerationStatus('Generating your personalized letter...');
 
-      // 1. 发起信件报告生成请求（现在包含场景描述）
+      // 1. Initiate letter report generation request (now includes scenario description)
       const generateResponse = await ReportApiService.generateReport({
         thread_id: threadId,
         user_id: userId,
       });
 
       if (!generateResponse.success || !generateResponse.task_id) {
-        throw new Error(generateResponse.message || '启动报告生成失败');
+        throw new Error(generateResponse.message || 'Failed to start report generation');
       }
 
-      console.log('报告生成任务已启动', { taskId: generateResponse.task_id });
-      setGenerationStatus('正在分析对话内容...');
+      console.log('Report generation task started', { taskId: generateResponse.task_id });
+      setGenerationStatus('Analyzing conversation content...');
 
-      // 2. 轮询报告状态，支持流式更新
+      // 2. Poll report status, support streaming updates
       const reportId = await ReportApiService.pollReportStatus(
         generateResponse.task_id,
         (status) => {
-          console.log('报告生成状态更新:', status);
+          console.log('Report generation status update:', status);
           switch (status) {
             case 'generating':
-              setGenerationStatus('正在深度分析您的对话...');
+              setGenerationStatus('Deeply analyzing your conversation...');
               break;
             default:
-              setGenerationStatus('正在生成报告...');
+              setGenerationStatus('Generating report...');
           }
         },
         (progress) => {
-          console.log('报告进度更新:', progress);
+          console.log('Report progress update:', progress);
           setCurrentProgress(progress);
 
-          // 根据完成的部分更新状态文本
+          // Update status text based on completed sections
           if (progress.completed_sections && progress.completed_sections.length > 0) {
             const sectionNames = [
-              '战略验尸',
-              '内心博弈分析',
-              '催化剂事件分析',
-              '重生策略与行动预案',
-              '行动锚点锻造'
+              'Strategic Autopsy',
+              'Internal Struggle Analysis',
+              'Catalyst Event Analysis',
+              'Rebirth Strategy & Action Plan',
+              'Action Anchor Forging'
             ];
             const completedCount = progress.completed_sections.length;
             const currentSectionName = progress.current_section && progress.current_section <= 5
@@ -128,36 +128,36 @@ export default function AnswerButton({ threadId, userId, className = '' }: Answe
               : '';
 
             if (progress.current_section && progress.current_section <= 5) {
-              setGenerationStatus(`正在生成第${progress.current_section}部分：${currentSectionName}...`);
+              setGenerationStatus(`Generating Part ${progress.current_section}: ${currentSectionName}...`);
             } else {
-              setGenerationStatus(`已完成 ${completedCount}/5 个部分`);
+              setGenerationStatus(`Completed ${completedCount}/5 sections`);
             }
           }
         }
       );
 
-      console.log('报告生成完成', { reportId });
-      setGenerationStatus('正在获取报告...');
+      console.log('Report generation complete', { reportId });
+      setGenerationStatus('Fetching report...');
 
-      // 3. 获取完整报告
+      // 3. Get complete report
       const reportResponse = await ReportApiService.getReport(reportId);
       
       if (!reportResponse.success) {
-        throw new Error('获取报告失败');
+        throw new Error('Failed to fetch report');
       }
 
-      console.log('报告获取成功', reportResponse.report);
-      
-      // 4. 设置报告数据并跳转到报告页面
+      console.log('Report fetched successfully', reportResponse.report);
+
+      // 4. Set report data and navigate to report page
       setCurrentReport(reportResponse.report);
       setGenerating(false);
       
-      // 跳转到报告页面
+      // Navigate to report page
       router.push(`/chat/${threadId}/report`);
 
     } catch (error) {
-      console.error('生成报告失败:', error);
-      setGenerationError(error instanceof Error ? error.message : '生成报告失败');
+      console.error('Failed to generate report:', error);
+      setGenerationError(error instanceof Error ? error.message : 'Failed to generate report');
       setGenerating(false);
     }
   };
@@ -180,25 +180,25 @@ export default function AnswerButton({ threadId, userId, className = '' }: Answe
           {isGeneratingQuestion ? (
             <>
               <Loader2 className="w-5 h-5 animate-spin" />
-              <span>生成问题中...</span>
+              <span>Generating question...</span>
             </>
           ) : isGenerating ? (
             <>
               <Loader2 className="w-5 h-5 animate-spin" />
-              <span>生成报告中...</span>
+              <span>Generating report...</span>
             </>
           ) : (
             <>
               <CheckCircle className="w-5 h-5" />
-              <span>我已获得答案</span>
+              <span>I Got My Answer</span>
             </>
           )}
         </button>
 
-        {/* 显示状态信息 */}
+        {/* Display status message */}
         {isGeneratingQuestion && (
           <div className="text-sm text-blue-600 text-center max-w-xs">
-            正在为您生成个性化的场景想象问题...
+            Generating personalized scenario imagination question...
           </div>
         )}
 
@@ -208,7 +208,7 @@ export default function AnswerButton({ threadId, userId, className = '' }: Answe
           </div>
         )}
 
-        {/* 显示错误信息 */}
+        {/* Display error message */}
         {scenarioError && (
           <div className="text-sm text-red-600 text-center max-w-xs">
             {scenarioError}
@@ -216,7 +216,7 @@ export default function AnswerButton({ threadId, userId, className = '' }: Answe
         )}
       </div>
 
-      {/* 场景问题模态框 */}
+      {/* Scenario question modal */}
       <ScenarioQuestionModal
         threadId={threadId}
         userId={userId}

@@ -1,5 +1,5 @@
 /**
- * 场景问题模态框组件
+ * Scenario question modal component
  */
 
 import React, { useState } from 'react';
@@ -36,7 +36,7 @@ export default function ScenarioQuestionModal({
 
   const handleSubmit = async () => {
     if (!localDescription.trim()) {
-      setSubmissionError('请输入您的场景描述');
+      setSubmissionError('Please enter your scenario description');
       return;
     }
 
@@ -55,8 +55,8 @@ export default function ScenarioQuestionModal({
       onClose();
 
     } catch (error) {
-      console.error('提交场景描述失败:', error);
-      setSubmissionError(error instanceof Error ? error.message : '提交失败');
+      console.error('Failed to submit scenario description:', error);
+      setSubmissionError(error instanceof Error ? error.message : 'Submission failed');
     } finally {
       setSubmittingResponse(false);
     }
@@ -74,7 +74,7 @@ export default function ScenarioQuestionModal({
           <div className="flex items-center space-x-2">
             <Lightbulb className="w-6 h-6 text-yellow-500" />
             <h2 className="text-xl font-semibold text-gray-900">
-              想象您的未来场景
+              Imagine Your Future Scenario
             </h2>
           </div>
           <button
@@ -87,14 +87,14 @@ export default function ScenarioQuestionModal({
 
         {/* Content */}
         <div className="p-6 space-y-6">
-          {/* 核心理念 */}
+          {/* Core concept */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <p className="text-blue-800 text-center font-medium">
-              💭 "你的未来生活只是你能想象到的生活"
+              💭 "Your future life is only the life you can imagine"
             </p>
           </div>
 
-          {/* 场景问题 */}
+          {/* Scenario question */}
           <div className="text-center space-y-4">
             <h3 className="text-xl font-semibold text-gray-900">
               {currentQuestion.scenario_question}
@@ -104,21 +104,21 @@ export default function ScenarioQuestionModal({
             </p>
           </div>
 
-          {/* 用户输入区域 */}
+          {/* User input area */}
           <div className="space-y-4">
             <textarea
               value={localDescription}
               onChange={(e) => setLocalDescription(e.target.value)}
-              placeholder="随便说说就好，想到什么就写什么..."
+              placeholder="Just share freely, write whatever comes to mind..."
               className="w-full h-32 p-4 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg"
               disabled={isSubmittingResponse}
             />
             <div className="text-sm text-gray-500 text-center">
-              没有标准答案，想到什么就写什么 ✨
+              No right answers, just write whatever comes to mind ✨
             </div>
           </div>
 
-          {/* 错误信息 */}
+          {/* Error message */}
           {submissionError && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-3">
               <p className="text-red-800 text-sm">{submissionError}</p>
@@ -133,7 +133,7 @@ export default function ScenarioQuestionModal({
             className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
             disabled={isSubmittingResponse}
           >
-            跳过
+            Skip
           </button>
 
           <button
@@ -150,12 +150,12 @@ export default function ScenarioQuestionModal({
             {isSubmittingResponse ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                <span>提交中...</span>
+                <span>Submitting...</span>
               </>
             ) : (
               <>
                 <Send className="w-4 h-4" />
-                <span>完成</span>
+                <span>Done</span>
               </>
             )}
           </button>

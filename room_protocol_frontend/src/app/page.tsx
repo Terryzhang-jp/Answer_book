@@ -22,23 +22,23 @@ export default function Home() {
       setLoading(true);
       setError(null);
 
-      // 添加用户消息到store
+      // Add user message to store
       addUserMessage(question);
 
-      // 调用创建房间API
+      // Call create room API
       const response = await ApiService.createRoom({
         question: question.trim(),
         user_id: 'user_' + Date.now(),
       });
 
-      // 添加响应到store
+      // Add response to store
       addResponse(response);
 
-      // 跳转到聊天页面
+      // Navigate to chat page
       router.push('/chat');
     } catch (error) {
-      console.error('提问失败:', error);
-      setError(error instanceof Error ? error.message : '提问失败，请重试');
+      console.error('Question failed:', error);
+      setError(error instanceof Error ? error.message : 'Failed to submit question, please try again');
     } finally {
       setIsLoading(false);
       setLoading(false);
@@ -66,22 +66,22 @@ export default function Home() {
         >
           <div className="flex items-center justify-center mb-6">
             <BookOpen className="w-12 h-12 text-amber-400 mr-4" />
-            <h1 className="text-5xl font-bold text-white">答案之书</h1>
+            <h1 className="text-5xl font-bold text-white">The Answer Book</h1>
             <Sparkles className="w-8 h-8 text-amber-400 ml-4" />
           </div>
           
           <p className="text-xl text-gray-300 mb-2">
-            向智者提问，获得深度洞察
+            Ask the wise, gain deep insights
           </p>
           <p className="text-sm text-gray-400 mb-3">
-            与历史上最伟大的思想家进行对话
+            Have conversations with history's greatest thinkers
           </p>
           <div className="bg-amber-900/20 border border-amber-500/30 rounded-xl p-4 text-left">
             <p className="text-amber-200 text-sm mb-2">
-              💡 <strong>提示：</strong>你可以指明邀请特定的智者参与对话
+              💡 <strong>Tip:</strong> You can invite specific wise figures to join the conversation
             </p>
             <p className="text-amber-100 text-xs leading-relaxed">
-              例如："请苏格拉底和孔子讨论教育的本质"、"邀请爱因斯坦解释相对论"、"让马斯克谈谈创新思维"等。任何历史人物、思想家、科学家都可以被邀请！
+              For example: "Have Socrates and Confucius discuss the essence of education", "Invite Einstein to explain relativity", "Let Musk talk about innovative thinking", etc. Any historical figure, thinker, or scientist can be invited!
             </p>
           </div>
         </motion.div>
@@ -97,7 +97,7 @@ export default function Home() {
             <textarea
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
-              placeholder="请输入你想探索的问题..."
+              placeholder="Enter the question you want to explore..."
               className="w-full h-32 px-6 py-4 bg-gray-800/50 border border-gray-600 rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent resize-none backdrop-blur-sm"
               disabled={isLoading}
             />
@@ -117,12 +117,12 @@ export default function Home() {
             {isLoading ? (
               <>
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                <span>正在邀请智者...</span>
+                <span>Inviting the wise...</span>
               </>
             ) : (
               <>
                 <Send className="w-5 h-5" />
-                <span>开始对话</span>
+                <span>Start Conversation</span>
               </>
             )}
           </motion.button>
@@ -134,15 +134,15 @@ export default function Home() {
           transition={{ duration: 0.8, delay: 0.6 }}
           className="mt-12"
         >
-          <p className="text-sm text-gray-400 mb-4">或者尝试这些复杂问题：</p>
+          <p className="text-sm text-gray-400 mb-4">Or try these thought-provoking questions:</p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-4xl mx-auto">
             {[
-              "请苏格拉底和孔子讨论教育的真正目的是什么？",
-              "邀请爱因斯坦和霍金解释时间的本质",
-              "让马克思和亚当·斯密辩论资本主义的未来",
-              "请达芬奇和乔布斯谈论创新与艺术的关系",
-              "邀请尼采和佛陀探讨痛苦与智慧",
-              "让图灵和马斯克预测AI对人类的影响"
+              "Have Socrates and Confucius discuss what is the true purpose of education?",
+              "Invite Einstein and Hawking to explain the nature of time",
+              "Let Marx and Adam Smith debate the future of capitalism",
+              "Have Da Vinci and Steve Jobs discuss the relationship between innovation and art",
+              "Invite Nietzsche and Buddha to explore suffering and wisdom",
+              "Let Turing and Musk predict the impact of AI on humanity"
             ].map((example, index) => (
               <button
                 key={index}
