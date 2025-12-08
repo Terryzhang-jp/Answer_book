@@ -1,26 +1,26 @@
 /**
- * 场景问题状态管理
+ * Scenario question state management
  */
 
 import { create } from 'zustand';
 import { ScenarioQuestionData } from '../types/scenario';
 
 interface ScenarioState {
-  // 当前场景问题数据
+  // Current scenario question data
   currentQuestion: ScenarioQuestionData | null;
-  
-  // 用户的场景描述
+
+  // User's scenario description
   userScenarioDescription: string;
-  
-  // 生成状态
+
+  // Generation state
   isGeneratingQuestion: boolean;
   isSubmittingResponse: boolean;
-  
-  // 错误状态
+
+  // Error state
   generationError: string | null;
   submissionError: string | null;
-  
-  // 显示状态
+
+  // Display state
   isQuestionVisible: boolean;
   
   // Actions

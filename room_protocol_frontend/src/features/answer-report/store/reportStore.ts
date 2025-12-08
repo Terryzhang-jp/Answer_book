@@ -2,18 +2,18 @@ import { create } from 'zustand';
 import { ReportData } from '../types/report';
 
 interface ReportState {
-  // 当前报告数据
+  // Current report data
   currentReport: ReportData | null;
-  currentProgress: Partial<ReportData> | null; // 流式进度数据
+  currentProgress: Partial<ReportData> | null; // Streaming progress data
 
-  // 生成状态
+  // Generation state
   isGenerating: boolean;
   generationStatus: string;
   generationError: string | null;
 
-  // 显示状态
+  // Display state
   isReportVisible: boolean;
-  currentSection: number; // 当前显示的部分 (0-4)
+  currentSection: number; // Current displayed section (0-4)
 
   // Actions
   setCurrentReport: (report: ReportData | null) => void;

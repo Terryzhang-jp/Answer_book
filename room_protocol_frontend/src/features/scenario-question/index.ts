@@ -1,5 +1,5 @@
 /**
- * 场景问题功能导出
+ * Scenario question feature exports
  */
 
 export { default as ScenarioQuestionModal } from './components/ScenarioQuestionModal';

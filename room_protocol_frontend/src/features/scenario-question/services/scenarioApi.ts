@@ -1,5 +1,5 @@
 /**
- * 场景问题API服务
+ * Scenario question API service
  */
 
 import { 
@@ -13,7 +13,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 export class ScenarioApiService {
   /**
-   * 生成场景想象问题
+   * Generate scenario imagination question
    */
   static async generateScenarioQuestion(request: ScenarioQuestionRequest): Promise<ScenarioQuestionResponse> {
     const response = await fetch(`${API_BASE_URL}/api/scenario/generate-question`, {
@@ -32,7 +32,7 @@ export class ScenarioApiService {
   }
 
   /**
-   * 提交用户的场景描述
+   * Submit user's scenario description
    */
   static async submitScenarioResponse(response: UserScenarioResponse): Promise<{ success: boolean; message: string; session_id: string }> {
     const apiResponse = await fetch(`${API_BASE_URL}/api/scenario/submit-response`, {
@@ -51,7 +51,7 @@ export class ScenarioApiService {
   }
 
   /**
-   * 获取场景会话信息
+   * Get scenario session info
    */
   static async getScenarioSession(sessionId: string): Promise<{ success: boolean; session: ScenarioSession }> {
     const response = await fetch(`${API_BASE_URL}/api/scenario/session/${sessionId}`);
@@ -64,7 +64,7 @@ export class ScenarioApiService {
   }
 
   /**
-   * 获取指定线程的所有场景会话
+   * Get all scenario sessions for a thread
    */
   static async getThreadScenarioSessions(threadId: string): Promise<{ success: boolean; sessions: ScenarioSession[] }> {
     const response = await fetch(`${API_BASE_URL}/api/scenario/sessions/thread/${threadId}`);

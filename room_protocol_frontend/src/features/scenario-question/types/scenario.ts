@@ -1,5 +1,5 @@
 /**
- * 场景问题相关的类型定义
+ * Scenario question related type definitions
  */
 
 export interface ScenarioQuestionData {

@@ -1,53 +1,53 @@
 export interface Evidence {
-  type: string; // "语言模式", "关注焦点", "情绪反应"
+  type: string; // "language pattern", "focus area", "emotional response"
   content: string;
-  quote: string; // 原始对话引用
+  quote: string; // Original dialogue quote
 }
 
 export interface ActionPlan {
-  goal: string; // 清晰的目标
-  steps: string[]; // 具体的步骤
-  timeline: string; // 明确的时间线
-  success_criteria: string; // 成功的标准
+  goal: string; // Clear goal
+  steps: string[]; // Specific steps
+  timeline: string; // Clear timeline
+  success_criteria: string; // Success criteria
 }
 
 export interface StrategicAutopsy {
-  problem_categorization: string; // 问题定性
-  dimensional_analysis: string[]; // 维度剖析
-  core_confusion: string; // 症结诊断
+  problem_categorization: string; // Problem categorization
+  dimensional_analysis: string[]; // Dimensional analysis
+  core_confusion: string; // Core issue diagnosis
 }
 
 export interface InternalStruggle {
-  contending_parties: string[]; // 博弈双方 [party1, party2]
+  contending_parties: string[]; // Contending parties [party1, party2]
   evidence_list: {
     party1: Evidence[];
     party2: Evidence[];
   };
-  outcome: string; // 博弈结果
+  outcome: string; // Struggle outcome
 }
 
 export interface CatalystEvent {
-  initial_stance: string; // 初始观念
-  key_insight: string; // 关键洞察
-  conceptual_evolution: string; // 观念演化
+  initial_stance: string; // Initial stance
+  key_insight: string; // Key insight
+  conceptual_evolution: string; // Conceptual evolution
 }
 
 export interface RebirthStrategy {
-  strategy_name: string; // 策略名称
-  core_logic: string; // 策略核心与好处
-  personal_significance: string; // 个人意义
-  success_analysis: string; // 成功性分析
-  action_plan: ActionPlan; // 行动预案
+  strategy_name: string; // Strategy name
+  core_logic: string; // Core logic and benefits
+  personal_significance: string; // Personal significance
+  success_analysis: string; // Success analysis
+  action_plan: ActionPlan; // Action plan
 }
 
 export interface ActionAnchor {
-  core_verb: string; // 核心动词
-  proverb: string; // 行动箴言
+  core_verb: string; // Core verb
+  proverb: string; // Action proverb
 }
 
 export interface LetterContent {
-  letter_content: string; // 信件内容
-  generated_at: string; // 生成时间
+  letter_content: string; // Letter content
+  generated_at: string; // Generation time
 }
 
 export interface ReportData {
@@ -56,17 +56,17 @@ export interface ReportData {
   user_id: string;
   generated_at: string;
   status: 'generating' | 'completed' | 'failed';
-  current_section?: number; // 当前正在生成的部分 (0-4)
-  completed_sections?: number[]; // 已完成的部分列表
+  current_section?: number; // Current section being generated (0-4)
+  completed_sections?: number[]; // List of completed sections
 
-  // 旧的分段报告字段（保持兼容性）
+  // Legacy section report fields (for backwards compatibility)
   strategic_autopsy?: StrategicAutopsy;
   internal_struggle?: InternalStruggle;
   catalyst_event?: CatalystEvent;
   rebirth_strategy?: RebirthStrategy;
   action_anchor?: ActionAnchor;
 
-  // 新的信件内容字段
+  // New letter content field
   letter_content?: LetterContent;
 
   error_message?: string;

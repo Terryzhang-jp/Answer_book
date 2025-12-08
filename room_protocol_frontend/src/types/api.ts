@@ -1,4 +1,4 @@
-// API类型定义
+// API type definitions
 
 export interface QuestionRequest {
   question: string;
@@ -26,7 +26,7 @@ export interface MemberChange {
   reason?: string;
 }
 
-// 对话分析相关类型
+// Conversation analysis related types
 export interface ExpertInsight {
   expert_name: string;
   total_contributions: number;
@@ -44,17 +44,17 @@ export interface ConversationEvolution {
 }
 
 export interface ConversationTimelineEntry {
-  speaker: string; // 发言者（专家名称或'用户'）
-  action: string; // 行动描述
-  content: string; // 具体内容
-  timestamp: string; // 时间戳
-  round_number: number; // 对话轮次
+  speaker: string; // Speaker (expert name or 'User')
+  action: string; // Action description
+  content: string; // Specific content
+  timestamp: string; // Timestamp
+  round_number: number; // Conversation round number
 }
 
 export interface ConversationAnalysis {
   user_question_analysis: string;
-  expert_selection_reason?: string; // 专家邀请理由
-  conversation_timeline: ConversationTimelineEntry[]; // 对话时间线纪要
+  expert_selection_reason?: string; // Expert invitation reason
+  conversation_timeline: ConversationTimelineEntry[]; // Conversation timeline summary
   all_experts_insights: ExpertInsight[];
   conversation_evolution: ConversationEvolution;
   suggested_directions: string[];
@@ -90,7 +90,7 @@ export interface HealthResponse {
 
 
 
-// Insight相关类型
+// Insight related types
 export interface InsightRequest {
   user_id: string;
   thread_id: string;
