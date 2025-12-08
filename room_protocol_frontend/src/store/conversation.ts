@@ -19,23 +19,23 @@ interface Message {
 }
 
 interface ConversationState {
-  // 当前对话状态
+  // Current conversation state
   currentThreadId: string | null;
   messages: Message[];
   isLoading: boolean;
   error: string | null;
 
-  // 房间状态
+  // Room state
   roomAnnouncement: string | null;
   currentExperts: string[];
   dialogueMode: 'single' | 'free_dialogue';
 
-  // 分析数据
+  // Analysis data
   conversationAnalysis: ConversationAnalysis | null;
 
 
 
-  // Insight显示状态
+  // Insight display state
   insightDisplay: {
     enabled: boolean;
     sessionId: string | null;
@@ -45,7 +45,7 @@ interface ConversationState {
     isLoading: boolean;
   };
 
-  // 操作方法
+  // Action methods
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   addUserMessage: (content: string) => void;
@@ -56,7 +56,7 @@ interface ConversationState {
 
 
 
-  // Insight显示操作方法
+  // Insight display action methods
   startInsightDisplay: (sessionId: string, insight: string) => void;
   completeInsightDisplay: () => void;
   skipInsightDisplay: () => void;
@@ -65,7 +65,7 @@ interface ConversationState {
 }
 
 export const useConversationStore = create<ConversationState>((set) => ({
-  // 初始状态
+  // Initial state
   currentThreadId: null,
   messages: [],
   isLoading: false,
@@ -77,7 +77,7 @@ export const useConversationStore = create<ConversationState>((set) => ({
 
 
 
-  // Insight显示初始状态
+  // Insight display initial state
   insightDisplay: {
     enabled: false,
     sessionId: null,
@@ -87,17 +87,17 @@ export const useConversationStore = create<ConversationState>((set) => ({
     isLoading: false,
   },
 
-  // 设置加载状态
+  // Set loading state
   setLoading: (loading: boolean) => {
     set({ isLoading: loading });
   },
 
-  // 设置错误信息
+  // Set error message
   setError: (error: string | null) => {
     set({ error });
   },
 
-  // 添加用户消息
+  // Add user message
   addUserMessage: (content: string) => {
     const message: Message = {
       id: Date.now().toString(),
@@ -111,12 +111,12 @@ export const useConversationStore = create<ConversationState>((set) => ({
     }));
   },
 
-  // 添加系统响应
+  // Add system response
   addResponse: (response: AnswerResponse) => {
     const newMessages: Message[] = [];
     const baseTimestamp = Date.now();
 
-    // 处理角色回应
+    // Process character responses
     response.character_responses.forEach((charResponse: CharacterResponse, index: number) => {
       const message: Message = {
         id: `${baseTimestamp}-${index}-${charResponse.character_name}`,
@@ -132,7 +132,7 @@ export const useConversationStore = create<ConversationState>((set) => ({
       newMessages.push(message);
     });
 
-    // 更新专家列表
+    // Update expert list
     const experts = response.character_responses
       .filter(char => char.character_role !== 'system')
       .map(char => char.character_name);
@@ -147,7 +147,7 @@ export const useConversationStore = create<ConversationState>((set) => ({
     }));
   },
 
-  // 清空对话
+  // Clear conversation
   clearConversation: () => {
     set({
       currentThreadId: null,
@@ -169,9 +169,9 @@ export const useConversationStore = create<ConversationState>((set) => ({
     });
   },
 
-  // 开启新讨论（清空所有数据包括localStorage）
+  // Start new discussion (clear all data including localStorage)
   startNewDiscussion: () => {
-    // 清空localStorage中的相关数据（SSR兼容）
+    // Clear localStorage related data (SSR compatible)
     const keysToRemove = [
       'conversation-storage',
       'chat-history',
@@ -183,9 +183,9 @@ export const useConversationStore = create<ConversationState>((set) => ({
     ];
 
     const clearedCount = safeClearItems(keysToRemove);
-    console.log(`清空了 ${clearedCount}/${keysToRemove.length} 个localStorage项`);
+    console.log(`Cleared ${clearedCount}/${keysToRemove.length} localStorage items`);
 
-    // 重置store状态
+    // Reset store state
     set({
       currentThreadId: null,
       messages: [],
@@ -207,16 +207,16 @@ export const useConversationStore = create<ConversationState>((set) => ({
     });
   },
 
-  // 设置线程ID
+  // Set thread ID
   setThreadId: (threadId: string) => {
     set({ currentThreadId: threadId });
   },
 
 
 
-  // Insight显示操作方法
+  // Insight display action methods
 
-  // 开始Insight显示
+  // Start insight display
   startInsightDisplay: (sessionId: string, insight: string) => {
     set((state) => ({
       insightDisplay: {
@@ -226,12 +226,12 @@ export const useConversationStore = create<ConversationState>((set) => ({
         insight,
         isActive: true,
         isCompleted: false,
-        isLoading: insight ? false : true, // 如果没有insight内容，设置为加载状态
+        isLoading: insight ? false : true, // Set to loading state if no insight content
       }
     }));
   },
 
-  // 完成Insight显示
+  // Complete insight display
   completeInsightDisplay: () => {
     set((state) => ({
       insightDisplay: {
@@ -242,7 +242,7 @@ export const useConversationStore = create<ConversationState>((set) => ({
     }));
   },
 
-  // 跳过Insight显示
+  // Skip insight display
   skipInsightDisplay: () => {
     set((state) => ({
       insightDisplay: {
@@ -254,7 +254,7 @@ export const useConversationStore = create<ConversationState>((set) => ({
     }));
   },
 
-  // 设置Insight加载状态
+  // Set insight loading state
   setInsightLoading: (loading: boolean) => {
     set((state) => ({
       insightDisplay: {
@@ -264,7 +264,7 @@ export const useConversationStore = create<ConversationState>((set) => ({
     }));
   },
 
-  // 重置Insight显示状态
+  // Reset insight display state
   resetInsightDisplay: () => {
     set(() => ({
       insightDisplay: {

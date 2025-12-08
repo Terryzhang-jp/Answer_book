@@ -94,7 +94,7 @@ export default function ChatPage() {
       const response = await ApiService.askQuestion({
         question: newQuestion.trim(),
         user_id: 'user_' + Date.now(),
-        thread_id: currentThreadId || undefined, // 传递当前的thread_id以继续对话
+        thread_id: currentThreadId || undefined, // Pass current thread_id to continue conversation
       });
 
       // API call complete, close insight display (disabled)
