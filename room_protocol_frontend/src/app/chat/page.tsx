@@ -253,7 +253,7 @@ export default function ChatPage() {
                             • {entry.speaker}
                           </span>
                           <span className="text-gray-700 ml-1">
-                            {entry.action}：{entry.content}
+                            {entry.action}: {entry.content}
                           </span>
                         </div>
                       ))}
